@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - LuxuryShop</title>
+    <title>Admin Panel - K'A Boutique</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -546,7 +546,7 @@
                 <div class="user-avatar" id="userAvatar">A</div>
                 <div>
                     <h6 class="mb-0" id="userName">Administrador</h6>
-                    <small id="userEmail">admin@luxuryshop.com</small>
+                    <small id="userEmail">quezadaa382@gmail.com</small>
                 </div>
             </div>
         </div>
@@ -1079,12 +1079,12 @@
                         
                         <div class="mb-3">
                             <label class="form-label">Nombre de la Tienda</label>
-                            <input type="text" class="form-control" id="storeName" value="LuxuryShop">
+                            <input type="text" class="form-control" id="storeName" value="K'A Boutique">
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label">Email de Contacto</label>
-                            <input type="email" class="form-control" id="storeEmail" value="info@luxuryshop.com">
+                            <input type="email" class="form-control" id="storeEmail" value="quezadaa382@gmail.com">
                         </div>
                         
                         <div class="mb-3">
@@ -1134,7 +1134,7 @@
                             <label class="form-label">Información Bancaria (para transferencias)</label>
                             <textarea class="form-control" id="bankInfo" rows="4">Banco: Banco Nacional
 Cuenta: 123-456789-0
-Titular: LuxuryShop S.A.
+Titular: K'A Boutique S.A.
 CLABE: 012180012345678900</textarea>
                         </div>
                         
@@ -3527,9 +3527,9 @@ CLABE: 012180012345678900</textarea>
                 const addressInput = document.getElementById('storeAddress');
                 const currencySelect = document.getElementById('storeCurrency');
                 
-                if (nameInput) nameInput.value = settings.general?.storeName || 'LuxuryShop';
-                if (emailInput) emailInput.value = settings.general?.storeEmail || 'info@luxuryshop.com';
-                if (phoneInput) phoneInput.value = settings.general?.storePhone || '+1 234 567 890';
+                if (nameInput) nameInput.value = settings.general?.storeName || 'K'A Boutique';
+                if (emailInput) emailInput.value = settings.general?.storeEmail || 'quezadaa382@gmail.com';
+                if (phoneInput) phoneInput.value = settings.general?.storePhone || '+593 99 429 8427';
                 if (addressInput) addressInput.value = settings.general?.storeAddress || 'Av. Principal 123, Ciudad';
                 if (currencySelect) currencySelect.value = settings.general?.storeCurrency || 'USD';
                 
@@ -3541,7 +3541,7 @@ CLABE: 012180012345678900</textarea>
                 if (payMethodTransfer) payMethodTransfer.checked = settings.payment?.methods?.transferencia !== false;
                 if (payMethodCard) payMethodCard.checked = settings.payment?.methods?.tarjeta === true;
                 if (payMethodCash) payMethodCash.checked = settings.payment?.methods?.efectivo === true;
-                if (bankInfo) bankInfo.value = settings.payment?.bankInfo || 'Banco: Banco Nacional\nCuenta: 123-456789-0\nTitular: LuxuryShop S.A.\nCLABE: 012180012345678900';
+                if (bankInfo) bankInfo.value = settings.payment?.bankInfo || 'Banco: Banco Nacional\nCuenta: 123-456789-0\nTitular: K'A Boutique S.A.\nCLABE: 012180012345678900';
                 
                 const shippingCost = document.getElementById('shippingCost');
                 const shippingTime = document.getElementById('shippingTime');
