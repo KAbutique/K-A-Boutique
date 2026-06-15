@@ -1,0 +1,4020 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - LuxuryShop</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #7209b7;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --danger-color: #f44336;
+            --info-color: #2196f3;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            height: 100vh;
+            background: linear-gradient(180deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            color: white;
+            padding-top: 20px;
+            z-index: 1000;
+            box-shadow: 2px 0 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+        
+        .sidebar.minimized {
+            width: 70px;
+        }
+        
+        .sidebar.minimized .nav-link span,
+        .sidebar.minimized .logo-text {
+            display: none;
+        }
+        
+        .sidebar.minimized .nav-link {
+            justify-content: center;
+        }
+        
+        .sidebar.minimized .nav-link i {
+            margin-right: 0;
+            font-size: 1.2rem;
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-weight: 800;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 1.8rem;
+        }
+        
+        .logo-text {
+            background: white;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-left-color: white;
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        
+        .top-bar {
+            background: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title {
+            color: var(--secondary-color);
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .toggle-sidebar {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.5rem;
+            color: white;
+        }
+        
+        .stat-icon.orders {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+        
+        .stat-icon.revenue {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+        }
+        
+        .stat-icon.customers {
+            background: linear-gradient(135deg, #ff9a00, #ff5e00);
+        }
+        
+        .stat-icon.pending {
+            background: linear-gradient(135deg, var(--warning-color), #ff6b9d);
+        }
+        
+        .stat-info h3 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+        
+        .stat-info p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .data-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+        }
+        
+        .card-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .card-title {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        .table th {
+            border-top: none;
+            font-weight: 600;
+            color: var(--secondary-color);
+            background-color: rgba(67, 97, 238, 0.05);
+        }
+        
+        .badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        
+        .badge-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge-confirmed {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge-shipped {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .badge-delivered {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .badge-cancelled {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge-refunded {
+            background-color: #e2e3e5;
+            color: #383d41;
+        }
+        
+        .btn-action {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: none;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-view {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-edit {
+            background-color: var(--info-color);
+            color: white;
+        }
+        
+        .btn-delete {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        
+        .btn-process {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-refund {
+            background-color: var(--warning-color);
+            color: white;
+        }
+        
+        .btn-action:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 30px;
+            height: 300px;
+        }
+        
+        .modal-xl-custom {
+            max-width: 90%;
+        }
+        
+        .form-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        
+        .form-section h5 {
+            color: var(--secondary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .filter-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .filter-group label {
+            margin: 0;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .alert-fixed {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 500px;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 70px;
+            }
+            
+            .sidebar .nav-link span,
+            .sidebar .logo-text {
+                display: none;
+            }
+            
+            .sidebar .nav-link {
+                justify-content: center;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 0;
+            }
+            
+            .main-content {
+                margin-left: 70px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+        <div class="text-center">
+            <div class="spinner-border" style="width: 3rem; height: 3rem; color: var(--primary-color);" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <h5 class="mt-3" id="loadingText">Cargando...</h5>
+        </div>
+    </div>
+
+    <div id="alertContainer" class="alert-fixed"></div>
+
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-gem"></i>
+                <span class="logo-text">Admin Panel</span>
+            </div>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="#" class="nav-link active" onclick="showDashboard()">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" onclick="showOrders()">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Pedidos</span>
+                    <span class="badge bg-danger ms-auto" id="pendingOrdersBadge">0</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" onclick="showPayments()">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Pagos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" onclick="showCustomers()">
+                    <i class="fas fa-users"></i>
+                    <span>Clientes</span>
+                </a>
+            </li>
+            <li>
+                <a href="items.html" class="nav-link">
+                    <i class="fas fa-box"></i>
+                    <span>Productos</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" onclick="showRefunds()">
+                    <i class="fas fa-exchange-alt"></i>
+                    <span>Devoluciones</span>
+                    <span class="badge bg-warning ms-auto" id="pendingRefundsBadge">0</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" onclick="showReports()">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reportes</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" class="nav-link" onclick="showSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>Configuración</span>
+                </a>
+            </li>
+        </ul>
+        
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <div>
+                    <h6 class="mb-0" id="userName">Administrador</h6>
+                    <small id="userEmail">admin@luxuryshop.com</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content" id="mainContent">
+        <div class="top-bar">
+            <div>
+                <button class="toggle-sidebar" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h2 class="page-title d-inline ms-3" id="pageTitle">Dashboard</h2>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary btn-sm" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Actualizar
+                </button>
+                <button class="btn btn-outline-danger btn-sm ms-2" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </div>
+
+        <div id="dashboardContent">
+            <div class="stats-grid">
+                <div class="stat-card fade-in">
+                    <div class="stat-icon orders">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalOrdersCount">0</h3>
+                        <p>Total Pedidos</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card fade-in">
+                    <div class="stat-icon revenue">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalRevenue">$0.00</h3>
+                        <p>Ingresos Totales</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card fade-in">
+                    <div class="stat-icon customers">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="totalCustomers">0</h3>
+                        <p>Clientes Registrados</p>
+                    </div>
+                </div>
+                
+                <div class="stat-card fade-in">
+                    <div class="stat-icon pending">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="pendingOrdersCount">0</h3>
+                        <p>Pedidos Pendientes</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5>Pedidos por Estado</h5>
+                        <canvas id="ordersChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="chart-container">
+                        <h5>Ingresos Mensuales</h5>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="data-card">
+                <div class="card-header">
+                    <h5 class="card-title">Pedidos Recientes</h5>
+                    <a href="#" class="btn btn-sm btn-primary" onclick="showOrders()">
+                        <i class="fas fa-eye me-1"></i> Ver Todos
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="recentOrdersTable">
+                        <thead>
+                            <tr>
+                                <th>Pedido #</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentOrdersBody">
+                            <tr>
+                                <td colspan="6" class="text-center">Cargando pedidos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="ordersContent" style="display: none;">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Estado:</label>
+                    <select class="form-select form-select-sm" style="width: 150px;" id="orderStatusFilter">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="enviado">Enviado</option>
+                        <option value="completado">Completado</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Desde:</label>
+                    <input type="date" class="form-control form-control-sm" style="width: 150px;" id="orderDateFrom">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Hasta:</label>
+                    <input type="date" class="form-control form-control-sm" style="width: 150px;" id="orderDateTo">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Cliente:</label>
+                    <input type="text" class="form-control form-control-sm" style="width: 200px;" id="orderCustomerFilter" placeholder="Buscar cliente...">
+                </div>
+                
+                <button class="btn btn-primary btn-sm" onclick="applyOrderFilters()">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+                
+                <button class="btn btn-outline-secondary btn-sm" onclick="resetOrderFilters()">
+                    <i class="fas fa-times me-1"></i> Limpiar
+                </button>
+                
+                <button class="btn btn-success btn-sm ms-auto" onclick="exportOrders()">
+                    <i class="fas fa-download me-1"></i> Exportar
+                </button>
+            </div>
+            
+            <div class="data-card">
+                <div class="card-header">
+                    <h5 class="card-title">Gestión de Pedidos</h5>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-2" onclick="printOrdersList()">
+                            <i class="fas fa-print me-1"></i> Imprimir
+                        </button>
+                        <button class="btn btn-sm btn-primary" onclick="refreshOrders()">
+                            <i class="fas fa-sync-alt me-1"></i> Actualizar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="ordersTable">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAllOrders" onclick="toggleSelectAllOrders()">
+                                </th>
+                                <th>Pedido #</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Productos</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                                <th>Pago</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ordersTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center">Cargando pedidos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3" id="bulkActions" style="display: none;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span id="selectedCount">0 pedidos seleccionados</span>
+                        <div>
+                            <select class="form-select form-select-sm d-inline-block" style="width: 200px;" id="bulkStatusAction">
+                                <option value="">Cambiar estado a...</option>
+                                <option value="confirmado">Confirmado</option>
+                                <option value="enviado">Enviado</option>
+                                <option value="completado">Completado</option>
+                                <option value="cancelado">Cancelado</option>
+                            </select>
+                            <button class="btn btn-sm btn-primary ms-2" onclick="applyBulkAction()">
+                                <i class="fas fa-check me-1"></i> Aplicar
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="clearOrderSelection()">
+                                <i class="fas fa-times me-1"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="paymentsContent" style="display: none;">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Estado:</label>
+                    <select class="form-select form-select-sm" style="width: 150px;" id="paymentStatusFilter">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmado">Confirmado</option>
+                        <option value="rechazado">Rechazado</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label>Método:</label>
+                    <select class="form-select form-select-sm" style="width: 150px;" id="paymentMethodFilter">
+                        <option value="">Todos</option>
+                        <option value="transferencia">Transferencia</option>
+                        <option value="tarjeta">Tarjeta</option>
+                        <option value="efectivo">Efectivo</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary btn-sm" onclick="applyPaymentFilters()">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+                
+                <button class="btn btn-success btn-sm ms-auto" onclick="exportPayments()">
+                    <i class="fas fa-download me-1"></i> Exportar
+                </button>
+            </div>
+            
+            <div class="data-card">
+                <div class="card-header">
+                    <h5 class="card-title">Gestión de Pagos</h5>
+                    <button class="btn btn-sm btn-primary" onclick="refreshPayments()">
+                        <i class="fas fa-sync-alt me-1"></i> Actualizar
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="paymentsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Pedido #</th>
+                                <th>Cliente</th>
+                                <th>Monto</th>
+                                <th>Método</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Comprobante</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody">
+                            <tr>
+                                <td colspan="9" class="text-center">Cargando pagos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="customersContent" style="display: none;">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Buscar:</label>
+                    <input type="text" class="form-control form-control-sm" style="width: 250px;" id="customerSearch" placeholder="Nombre, email o teléfono...">
+                </div>
+                
+                <div class="filter-group">
+                    <label>Desde:</label>
+                    <input type="date" class="form-control form-control-sm" style="width: 150px;" id="customerDateFrom">
+                </div>
+                
+                <button class="btn btn-primary btn-sm" onclick="searchCustomers()">
+                    <i class="fas fa-search me-1"></i> Buscar
+                </button>
+                
+                <button class="btn btn-success btn-sm ms-auto" onclick="exportCustomers()">
+                    <i class="fas fa-download me-1"></i> Exportar
+                </button>
+                
+                <button class="btn btn-primary btn-sm" onclick="showAddCustomerModal()">
+                    <i class="fas fa-plus me-1"></i> Nuevo Cliente
+                </button>
+            </div>
+            
+            <div class="data-card">
+                <div class="card-header">
+                    <h5 class="card-title">Gestión de Clientes</h5>
+                    <button class="btn btn-sm btn-primary" onclick="refreshCustomers()">
+                        <i class="fas fa-sync-alt me-1"></i> Actualizar
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="customersTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Registro</th>
+                                <th>Pedidos</th>
+                                <th>Total Gastado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customersTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center">Cargando clientes...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="refundsContent" style="display: none;">
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <label>Estado:</label>
+                    <select class="form-select form-select-sm" style="width: 150px;" id="refundStatusFilter">
+                        <option value="">Todos</option>
+                        <option value="pendiente">Pendiente</option>
+                        <option value="procesando">Procesando</option>
+                        <option value="completado">Completado</option>
+                        <option value="rechazado">Rechazado</option>
+                    </select>
+                </div>
+                
+                <button class="btn btn-primary btn-sm" onclick="applyRefundFilters()">
+                    <i class="fas fa-filter me-1"></i> Filtrar
+                </button>
+                
+                <button class="btn btn-success btn-sm ms-auto" onclick="exportRefunds()">
+                    <i class="fas fa-download me-1"></i> Exportar
+                </button>
+                
+                <button class="btn btn-primary btn-sm" onclick="showAddRefundModal()">
+                    <i class="fas fa-plus me-1"></i> Nueva Devolución
+                </button>
+            </div>
+            
+            <div class="data-card">
+                <div class="card-header">
+                    <h5 class="card-title">Gestión de Devoluciones</h5>
+                    <button class="btn btn-sm btn-primary" onclick="refreshRefunds()">
+                        <i class="fas fa-sync-alt me-1"></i> Actualizar
+                    </button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover" id="refundsTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Pedido #</th>
+                                <th>Cliente</th>
+                                <th>Motivo</th>
+                                <th>Monto</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="refundsTableBody">
+                            <tr>
+                                <td colspan="8" class="text-center">Cargando devoluciones...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="reportsContent" style="display: none;">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-section">
+                        <h5>Generar Reporte</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Reporte</label>
+                            <select class="form-select" id="reportType">
+                                <option value="sales">Ventas</option>
+                                <option value="payments">Pagos</option>
+                                <option value="customers">Clientes</option>
+                                <option value="products">Productos</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Período</label>
+                            <select class="form-select" id="reportPeriod">
+                                <option value="today">Hoy</option>
+                                <option value="yesterday">Ayer</option>
+                                <option value="week">Esta semana</option>
+                                <option value="month">Este mes</option>
+                                <option value="quarter">Este trimestre</option>
+                                <option value="year">Este año</option>
+                                <option value="custom">Personalizado</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3" id="customDateRange" style="display: none;">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="form-label">Desde</label>
+                                    <input type="date" class="form-control" id="reportDateFrom">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Hasta</label>
+                                    <input type="date" class="form-control" id="reportDateTo">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Formato</label>
+                            <select class="form-select" id="reportFormat">
+                                <option value="pdf">PDF</option>
+                                <option value="excel">Excel</option>
+                                <option value="csv">CSV</option>
+                                <option value="print">Imprimir</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary w-100" onclick="generateReport()">
+                            <i class="fas fa-download me-2"></i> Generar Reporte
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <div class="form-section">
+                        <h5>Estadísticas Avanzadas</h5>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h3 id="avgOrderValue">$0.00</h3>
+                                        <p class="text-muted">Ticket Promedio</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h3 id="conversionRate">0%</h3>
+                                        <p class="text-muted">Tasa de Conversión</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card bg-light">
+                                    <div class="card-body text-center">
+                                        <h3 id="customerRetention">0%</h3>
+                                        <p class="text-muted">Retención Clientes</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-section">
+                        <h5>Productos Más Vendidos</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Ingresos</th>
+                                        <th>Tendencia</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topProductsBody">
+                                    <tr>
+                                        <td colspan="4" class="text-center">Cargando...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="settingsContent" style="display: none;">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="list-group" id="settingsMenu">
+                        <a href="#" class="list-group-item list-group-item-action active" onclick="showSettingsSection(this, 'general')">
+                            <i class="fas fa-cog me-2"></i> General
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettingsSection(this, 'payment')">
+                            <i class="fas fa-credit-card me-2"></i> Pagos
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettingsSection(this, 'shipping')">
+                            <i class="fas fa-shipping-fast me-2"></i> Envíos
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettingsSection(this, 'notifications')">
+                            <i class="fas fa-bell me-2"></i> Notificaciones
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettingsSection(this, 'users')">
+                            <i class="fas fa-users me-2"></i> Usuarios
+                        </a>
+                        <a href="#" class="list-group-item list-group-item-action" onclick="showSettingsSection(this, 'api')">
+                            <i class="fas fa-code me-2"></i> API
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="col-md-9">
+                    <div id="generalSettings" class="form-section">
+                        <h5>Configuración General</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de la Tienda</label>
+                            <input type="text" class="form-control" id="storeName" value="LuxuryShop">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email de Contacto</label>
+                            <input type="email" class="form-control" id="storeEmail" value="info@luxuryshop.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" class="form-control" id="storePhone" value="+1 234 567 890">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Dirección</label>
+                            <textarea class="form-control" id="storeAddress" rows="2">Av. Principal 123, Ciudad</textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Moneda</label>
+                            <select class="form-select" id="storeCurrency">
+                                <option value="USD">USD ($)</option>
+                                <option value="MXN">MXN ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveGeneralSettings()">
+                            <i class="fas fa-save me-2"></i> Guardar Cambios
+                        </button>
+                    </div>
+                    
+                    <div id="paymentSettings" class="form-section" style="display: none;">
+                        <h5>Configuración de Pagos</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Métodos de Pago Activos</label><br>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="transferencia" id="payMethodTransfer">
+                                <label class="form-check-label" for="payMethodTransfer">Transferencia Bancaria</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="tarjeta" id="payMethodCard">
+                                <label class="form-check-label" for="payMethodCard">Tarjeta de Crédito/Débito</label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="efectivo" id="payMethodCash">
+                                <label class="form-check-label" for="payMethodCash">Efectivo (contra entrega)</label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Información Bancaria (para transferencias)</label>
+                            <textarea class="form-control" id="bankInfo" rows="4">Banco: Banco Nacional
+Cuenta: 123-456789-0
+Titular: LuxuryShop S.A.
+CLABE: 012180012345678900</textarea>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="savePaymentSettings()">
+                            <i class="fas fa-save me-2"></i> Guardar Pagos
+                        </button>
+                    </div>
+                    
+                    <div id="shippingSettings" class="form-section" style="display: none;">
+                        <h5>Configuración de Envíos</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Costo de Envío ($)</label>
+                            <input type="number" class="form-control" id="shippingCost" step="0.01" value="5.00">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tiempo estimado de entrega</label>
+                            <input type="text" class="form-control" id="shippingTime" value="3-5 días hábiles">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Método de envío</label>
+                            <select class="form-select" id="shippingMethod">
+                                <option value="estandar">Estándar</option>
+                                <option value="express">Express</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveShippingSettings()">
+                            <i class="fas fa-save me-2"></i> Guardar Envíos
+                        </button>
+                    </div>
+                    
+                    <div id="notificationsSettings" class="form-section" style="display: none;">
+                        <h5>Configuración de Notificaciones</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email del Administrador</label>
+                            <input type="email" class="form-control" id="adminNotificationEmail" value="admin@luxuryshop.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyNewOrder" checked>
+                                <label class="form-check-label" for="notifyNewOrder">Notificar por email cuando se reciba un nuevo pedido</label>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="notifyPayment" checked>
+                                <label class="form-check-label" for="notifyPayment">Notificar cuando se suba un comprobante de pago</label>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveNotificationSettings()">
+                            <i class="fas fa-save me-2"></i> Guardar Notificaciones
+                        </button>
+                    </div>
+                    
+                    <div id="usersSettings" class="form-section" style="display: none;">
+                        <h5>Configuración de Usuarios</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Rol por defecto al registrarse</label>
+                            <select class="form-select" id="defaultUserRole">
+                                <option value="cliente">Cliente</option>
+                                <option value="vip">VIP</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="allowRegistration" checked>
+                                <label class="form-check-label" for="allowRegistration">Permitir registro de nuevos usuarios</label>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveUsersSettings()">
+                            <i class="fas fa-save me-2"></i> Guardar Usuarios
+                        </button>
+                    </div>
+                    
+                    <div id="apiSettings" class="form-section" style="display: none;">
+                        <h5>Configuración de API</h5>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Cloudinary Cloud Name</label>
+                            <input type="text" class="form-control" id="apiCloudName" value="djelnkrtm">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Cloudinary Upload Preset</label>
+                            <input type="text" class="form-control" id="apiUploadPreset" value="Depositos">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Carpeta de subida en Cloudinary</label>
+                            <input type="text" class="form-control" id="apiCloudFolder" value="samples/depositos">
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="saveApiSettings()">
+                            <i class="fas fa-save me-2"></i> Guardar API
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Pedido <span id="modalOrderNumber"></span></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="orderDetailsContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" onclick="printOrderDetails()">
+                        <i class="fas fa-print me-2"></i> Imprimir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="paymentDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Pago</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="paymentDetailsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Detalles del Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="customerDetailsContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerModalTitle">Nuevo Cliente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="customerForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre Completo</label>
+                                    <input type="text" class="form-control" id="customerName" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="customerEmail" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="tel" class="form-control" id="customerPhone">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Dirección</label>
+                                    <textarea class="form-control" id="customerAddress" rows="3"></textarea>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Ciudad</label>
+                                    <input type="text" class="form-control" id="customerCity">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label class="form-label">Código Postal</label>
+                                    <input type="text" class="form-control" id="customerZip">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notas</label>
+                            <textarea class="form-control" id="customerNotes" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveCustomer()">Guardar Cliente</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="inventoryErrorModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle me-2"></i> Error de Inventario
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="inventoryErrorContent"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE FIREBASE (compartida con la tienda)
+        // ============================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyANa6zWkGrYQ7O7M6XT2oYbArsZIcs36M8",
+            authDomain: "trip-a9341.firebaseapp.com",
+            databaseURL: "https://trip-a9341-default-rtdb.firebaseio.com",
+            projectId: "trip-a9341",
+            storageBucket: "trip-a9341.appspot.com",
+            messagingSenderId: "379336201132",
+            appId: "1:379336201132:web:34b0b863c3462c12aba009",
+            measurementId: "G-PJQ32ZXJ0B"
+        };
+
+        let firebaseApp, firebaseAuth, firebaseDatabase;
+        try {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            firebaseAuth = firebase.auth();
+            firebaseDatabase = firebase.database();
+            console.log("✅ Firebase inicializado correctamente");
+        } catch (error) {
+            console.error("❌ Error inicializando Firebase:", error);
+        }
+
+        let currentUser = null;
+        let allOrders = [];
+        let allCustomers = [];
+        let allProducts = [];
+        let allPayments = [];
+        let allRefunds = [];
+        let selectedOrders = new Set();
+        let ordersChart = null;
+        let revenueChart = null;
+        let productsRef = null;
+        let unsubscribeProducts = null;
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("Admin Panel cargado");
+            
+            if (firebaseAuth) {
+                firebaseAuth.onAuthStateChanged(function(user) {
+                    currentUser = user;
+                    if (user && (user.email === 'admin@luxuryshop.com' || user.email === 'admin@admin.com')) {
+                        updateUserInfo(user);
+                        loadProducts();
+                        loadDashboardData();
+                        loadRefunds();
+                        loadAllSettingsIntoForms();
+                    } else if (user) {
+                        firebaseAuth.signOut().then(() => {
+                            showAlert("No tienes permisos de administrador.", "danger");
+                            setTimeout(() => window.location.href = 'index.html', 1500);
+                        });
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                });
+            }
+            
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            const reportPeriod = document.getElementById('reportPeriod');
+            if (reportPeriod) {
+                reportPeriod.addEventListener('change', function() {
+                    const customRange = document.getElementById('customDateRange');
+                    if (customRange) customRange.style.display = this.value === 'custom' ? 'block' : 'none';
+                });
+            }
+            
+            const customerSearch = document.getElementById('customerSearch');
+            if (customerSearch) {
+                customerSearch.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') searchCustomers();
+                });
+            }
+            
+            const orderCustomerFilter = document.getElementById('orderCustomerFilter');
+            if (orderCustomerFilter) {
+                orderCustomerFilter.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') applyOrderFilters();
+                });
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('mainContent');
+            if (sidebar && mainContent) {
+                sidebar.classList.toggle('minimized');
+                mainContent.classList.toggle('expanded');
+            }
+        }
+
+        function showDashboard() {
+            setActiveNav('dashboard');
+            document.getElementById('pageTitle').textContent = 'Dashboard';
+            showSection('dashboardContent');
+            loadDashboardData();
+        }
+
+        function showOrders() {
+            setActiveNav('orders');
+            document.getElementById('pageTitle').textContent = 'Gestión de Pedidos';
+            showSection('ordersContent');
+            loadOrders();
+        }
+
+        function showPayments() {
+            setActiveNav('payments');
+            document.getElementById('pageTitle').textContent = 'Gestión de Pagos';
+            showSection('paymentsContent');
+            loadPayments();
+        }
+
+        function showCustomers() {
+            setActiveNav('customers');
+            document.getElementById('pageTitle').textContent = 'Gestión de Clientes';
+            showSection('customersContent');
+            loadCustomers();
+        }
+
+        function showRefunds() {
+            setActiveNav('refunds');
+            document.getElementById('pageTitle').textContent = 'Gestión de Devoluciones';
+            showSection('refundsContent');
+            loadRefunds();
+        }
+
+        function showReports() {
+            setActiveNav('reports');
+            document.getElementById('pageTitle').textContent = 'Reportes y Estadísticas';
+            showSection('reportsContent');
+            loadReports();
+        }
+
+        function showSettings() {
+            setActiveNav('settings');
+            document.getElementById('pageTitle').textContent = 'Configuración';
+            showSection('settingsContent');
+            loadAllSettingsIntoForms();
+            const firstMenuItem = document.querySelector('#settingsMenu .list-group-item');
+            if (firstMenuItem) {
+                showSettingsSection(firstMenuItem, 'general');
+            }
+        }
+
+        function setActiveNav(section) {
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            const navLinks = {
+                'dashboard': document.querySelector('.nav-link[onclick="showDashboard()"]'),
+                'orders': document.querySelector('.nav-link[onclick="showOrders()"]'),
+                'payments': document.querySelector('.nav-link[onclick="showPayments()"]'),
+                'customers': document.querySelector('.nav-link[onclick="showCustomers()"]'),
+                'refunds': document.querySelector('.nav-link[onclick="showRefunds()"]'),
+                'reports': document.querySelector('.nav-link[onclick="showReports()"]'),
+                'settings': document.querySelector('.nav-link[onclick="showSettings()"]')
+            };
+            
+            if (navLinks[section]) {
+                navLinks[section].classList.add('active');
+            }
+        }
+
+        function showSection(sectionId) {
+            const sections = [
+                'dashboardContent',
+                'ordersContent',
+                'paymentsContent',
+                'customersContent',
+                'refundsContent',
+                'reportsContent',
+                'settingsContent'
+            ];
+            
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) element.style.display = 'none';
+            });
+            
+            const sectionElement = document.getElementById(sectionId);
+            if (sectionElement) sectionElement.style.display = 'block';
+        }
+
+        function showSettingsSection(element, section) {
+            document.querySelectorAll('#settingsMenu .list-group-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            element.classList.add('active');
+            
+            document.getElementById('generalSettings').style.display = 'none';
+            document.getElementById('paymentSettings').style.display = 'none';
+            document.getElementById('shippingSettings').style.display = 'none';
+            document.getElementById('notificationsSettings').style.display = 'none';
+            document.getElementById('usersSettings').style.display = 'none';
+            document.getElementById('apiSettings').style.display = 'none';
+            
+            if (section === 'general') document.getElementById('generalSettings').style.display = 'block';
+            else if (section === 'payment') document.getElementById('paymentSettings').style.display = 'block';
+            else if (section === 'shipping') document.getElementById('shippingSettings').style.display = 'block';
+            else if (section === 'notifications') document.getElementById('notificationsSettings').style.display = 'block';
+            else if (section === 'users') document.getElementById('usersSettings').style.display = 'block';
+            else if (section === 'api') document.getElementById('apiSettings').style.display = 'block';
+        }
+
+        function updateUserInfo(user) {
+            const name = user.displayName || user.email.split('@')[0];
+            const email = user.email;
+            const initials = name.charAt(0).toUpperCase();
+            
+            const userNameSpan = document.getElementById('userName');
+            const userEmailSpan = document.getElementById('userEmail');
+            const userAvatarSpan = document.getElementById('userAvatar');
+            
+            if (userNameSpan) userNameSpan.textContent = name;
+            if (userEmailSpan) userEmailSpan.textContent = email;
+            if (userAvatarSpan) userAvatarSpan.textContent = initials;
+        }
+
+        function logout() {
+            if (firebaseAuth) {
+                if (unsubscribeProducts) {
+                    unsubscribeProducts();
+                    unsubscribeProducts = null;
+                }
+                firebaseAuth.signOut().then(() => {
+                    window.location.href = 'index.html';
+                }).catch(error => {
+                    showAlert('Error al cerrar sesión: ' + error.message, 'danger');
+                });
+            }
+        }
+
+        function loadDashboardData() {
+            showLoading('Cargando datos del dashboard...');
+            
+            if (firebaseDatabase) {
+                const ordersRef = firebaseDatabase.ref('orders');
+                ordersRef.once('value').then(snapshot => {
+                    allOrders = [];
+                    const ordersData = snapshot.val();
+                    
+                    if (ordersData) {
+                        Object.keys(ordersData).forEach(key => {
+                            allOrders.push({
+                                id: key,
+                                ...ordersData[key]
+                            });
+                        });
+                    }
+                    
+                    loadLocalOrders();
+                    updateDashboardStats();
+                    loadRecentOrders();
+                    createCharts();
+                    
+                }).catch(error => {
+                    console.error('Error cargando pedidos:', error);
+                    loadLocalOrders();
+                    updateDashboardStats();
+                    loadRecentOrders();
+                    createCharts();
+                });
+            } else {
+                loadLocalOrders();
+                updateDashboardStats();
+                loadRecentOrders();
+                createCharts();
+            }
+            
+            loadDashboardCustomers();
+            
+            setTimeout(() => {
+                hideLoading();
+            }, 2000);
+        }
+
+        function loadLocalOrders() {
+            try {
+                const localOrders = JSON.parse(localStorage.getItem('localOrders')) || [];
+                localOrders.forEach(order => {
+                    if (!allOrders.some(o => o.orderNumber === order.orderNumber)) {
+                        allOrders.push(order);
+                    }
+                });
+            } catch (error) {
+                console.error('Error cargando pedidos locales:', error);
+            }
+        }
+
+        function updateDashboardStats() {
+            const totalOrdersSpan = document.getElementById('totalOrdersCount');
+            if (totalOrdersSpan) totalOrdersSpan.textContent = allOrders.length;
+            
+            const pendingOrders = allOrders.filter(order => order.status === 'pendiente');
+            const pendingOrdersSpan = document.getElementById('pendingOrdersCount');
+            const pendingBadge = document.getElementById('pendingOrdersBadge');
+            if (pendingOrdersSpan) pendingOrdersSpan.textContent = pendingOrders.length;
+            if (pendingBadge) pendingBadge.textContent = pendingOrders.length;
+            
+            const totalRevenue = allOrders.reduce((sum, order) => {
+                return sum + (parseFloat(order.total) || 0);
+            }, 0);
+            const revenueSpan = document.getElementById('totalRevenue');
+            if (revenueSpan) revenueSpan.textContent = '$' + totalRevenue.toFixed(2);
+            
+            updatePendingCounts();
+        }
+
+        function loadRecentOrders() {
+            const tbody = document.getElementById('recentOrdersBody');
+            if (!tbody) return;
+            
+            const recentOrders = [...allOrders]
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                .slice(0, 10);
+            
+            if (recentOrders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center">No hay pedidos recientes</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            recentOrders.forEach(order => {
+                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) : 'Sin fecha';
+                
+                html += `
+                    <tr>
+                        <td><strong>${order.orderNumber || 'N/A'}</strong></td>
+                        <td>${order.userName || order.userEmail || 'Cliente'}</td>
+                        <td>${date}</td>
+                        <td>$${(parseFloat(order.total) || 0).toFixed(2)}</td>
+                        <td><span class="badge ${getStatusBadgeClass(order.status)}">${order.status || 'pendiente'}</span></td>
+                        <td>
+                            <button class="btn-action btn-view" onclick="viewOrderDetails('${order.id || order.orderNumber}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function loadDashboardCustomers() {
+            if (firebaseDatabase) {
+                const usersRef = firebaseDatabase.ref('users');
+                usersRef.once('value').then(snapshot => {
+                    const usersData = snapshot.val();
+                    let customerCount = 0;
+                    
+                    if (usersData) {
+                        customerCount = Object.keys(usersData).length;
+                    }
+                    
+                    const uniqueCustomers = new Set();
+                    allOrders.forEach(order => {
+                        if (order.userEmail) {
+                            uniqueCustomers.add(order.userEmail);
+                        }
+                    });
+                    
+                    const totalCustomers = Math.max(customerCount, uniqueCustomers.size);
+                    const customersSpan = document.getElementById('totalCustomers');
+                    if (customersSpan) customersSpan.textContent = totalCustomers;
+                    
+                }).catch(error => {
+                    console.error('Error cargando clientes:', error);
+                    const uniqueCustomers = new Set();
+                    allOrders.forEach(order => {
+                        if (order.userEmail) {
+                            uniqueCustomers.add(order.userEmail);
+                        }
+                    });
+                    const customersSpan = document.getElementById('totalCustomers');
+                    if (customersSpan) customersSpan.textContent = uniqueCustomers.size;
+                });
+            } else {
+                const uniqueCustomers = new Set();
+                allOrders.forEach(order => {
+                    if (order.userEmail) {
+                        uniqueCustomers.add(order.userEmail);
+                    }
+                });
+                const customersSpan = document.getElementById('totalCustomers');
+                if (customersSpan) customersSpan.textContent = uniqueCustomers.size;
+            }
+        }
+
+        function createCharts() {
+            if (ordersChart) ordersChart.destroy();
+            if (revenueChart) revenueChart.destroy();
+            
+            const statusCounts = {
+                'pendiente': 0,
+                'confirmado': 0,
+                'enviado': 0,
+                'completado': 0,
+                'cancelado': 0
+            };
+            
+            allOrders.forEach(order => {
+                const status = order.status || 'pendiente';
+                if (statusCounts[status] !== undefined) {
+                    statusCounts[status]++;
+                }
+            });
+            
+            const ordersCtx = document.getElementById('ordersChart').getContext('2d');
+            ordersChart = new Chart(ordersCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pendiente', 'Confirmado', 'Enviado', 'Completado', 'Cancelado'],
+                    datasets: [{
+                        data: [
+                            statusCounts.pendiente,
+                            statusCounts.confirmado,
+                            statusCounts.enviado,
+                            statusCounts.completado,
+                            statusCounts.cancelado
+                        ],
+                        backgroundColor: [
+                            '#ffc107',
+                            '#17a2b8',
+                            '#007bff',
+                            '#28a745',
+                            '#dc3545'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            const monthlyRevenue = {};
+            const currentYear = new Date().getFullYear();
+            
+            allOrders.forEach(order => {
+                if (order.createdAt && order.total) {
+                    const date = new Date(order.createdAt);
+                    if (date.getFullYear() === currentYear) {
+                        const month = date.getMonth();
+                        const key = `${currentYear}-${month}`;
+                        if (!monthlyRevenue[key]) {
+                            monthlyRevenue[key] = 0;
+                        }
+                        monthlyRevenue[key] += parseFloat(order.total) || 0;
+                    }
+                }
+            });
+            
+            const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const last6Months = [];
+            const last6MonthsRevenue = [];
+            
+            for (let i = 5; i >= 0; i--) {
+                const date = new Date();
+                date.setMonth(date.getMonth() - i);
+                const year = date.getFullYear();
+                const month = date.getMonth();
+                const key = `${year}-${month}`;
+                
+                last6Months.push(monthNames[month]);
+                last6MonthsRevenue.push(monthlyRevenue[key] || 0);
+            }
+            
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            revenueChart = new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: last6Months,
+                    datasets: [{
+                        label: 'Ingresos ($)',
+                        data: last6MonthsRevenue,
+                        borderColor: '#4361ee',
+                        backgroundColor: 'rgba(67, 97, 238, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(0);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadOrders() {
+            showLoading('Cargando pedidos...');
+            
+            const tbody = document.getElementById('ordersTableBody');
+            if (!tbody) return;
+            
+            if (allOrders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center">No hay pedidos registrados</td>
+                    </tr>
+                `;
+                hideLoading();
+                return;
+            }
+            
+            const sortedOrders = [...allOrders].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            
+            let html = '';
+            sortedOrders.forEach(order => {
+                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) : 'Sin fecha';
+                
+                const productCount = order.items ? order.items.length : 0;
+                
+                html += `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="order-checkbox" value="${order.id || order.orderNumber}" 
+                                   onchange="toggleOrderSelection(this)">
+                        </td>
+                        <td><strong>${order.orderNumber || 'N/A'}</strong></td>
+                        <td>
+                            <div>${order.userName || 'Cliente'}</div>
+                            <small class="text-muted">${order.userEmail || ''}</small>
+                        </td>
+                        <td>${date}</td>
+                        <td>${productCount} producto(s)</td>
+                        <td>$${(parseFloat(order.total) || 0).toFixed(2)}</td>
+                        <td><span class="badge ${getStatusBadgeClass(order.status)}">${order.status || 'pendiente'}</span></td>
+                        <td>
+                            ${order.receiptUrl ? 
+                                '<span class="badge bg-success">Comprobante</span>' : 
+                                '<span class="badge bg-secondary">Sin comprobante</span>'
+                            }
+                        </td>
+                        <td>
+                            <button class="btn-action btn-view me-1" onclick="viewOrderDetails('${order.id || order.orderNumber}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit me-1" onclick="editOrderStatus('${order.id || order.orderNumber}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-process" onclick="processOrder('${order.id || order.orderNumber}')">
+                                <i class="fas fa-forward"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+            hideLoading();
+        }
+
+        function applyOrderFilters() {
+            const status = document.getElementById('orderStatusFilter').value;
+            const dateFrom = document.getElementById('orderDateFrom').value;
+            const dateTo = document.getElementById('orderDateTo').value;
+            const customerFilter = document.getElementById('orderCustomerFilter').value.toLowerCase();
+            
+            let filteredOrders = [...allOrders];
+            
+            if (status) {
+                filteredOrders = filteredOrders.filter(order => order.status === status);
+            }
+            
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom).getTime();
+                filteredOrders = filteredOrders.filter(order => order.createdAt >= fromDate);
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo + 'T23:59:59').getTime();
+                filteredOrders = filteredOrders.filter(order => order.createdAt <= toDate);
+            }
+            
+            if (customerFilter) {
+                filteredOrders = filteredOrders.filter(order => 
+                    (order.userName && order.userName.toLowerCase().includes(customerFilter)) ||
+                    (order.userEmail && order.userEmail.toLowerCase().includes(customerFilter))
+                );
+            }
+            
+            updateOrdersTable(filteredOrders);
+        }
+
+        function resetOrderFilters() {
+            const statusFilter = document.getElementById('orderStatusFilter');
+            const dateFrom = document.getElementById('orderDateFrom');
+            const dateTo = document.getElementById('orderDateTo');
+            const customerFilter = document.getElementById('orderCustomerFilter');
+            
+            if (statusFilter) statusFilter.value = '';
+            if (dateFrom) dateFrom.value = '';
+            if (dateTo) dateTo.value = '';
+            if (customerFilter) customerFilter.value = '';
+            loadOrders();
+        }
+
+        function updateOrdersTable(orders) {
+            const tbody = document.getElementById('ordersTableBody');
+            if (!tbody) return;
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center">No se encontraron pedidos
+                        <td colspan="9" class="text-center">No se encontraron pedidos</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            orders.forEach(order => {
+                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) : 'Sin fecha';
+                
+                const productCount = order.items ? order.items.length : 0;
+                
+                html += `
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="order-checkbox" value="${order.id || order.orderNumber}" 
+                                   onchange="toggleOrderSelection(this)">
+                        </td>
+                        <td><strong>${order.orderNumber || 'N/A'}</strong></td>
+                        <td>
+                            <div>${order.userName || 'Cliente'}</div>
+                            <small class="text-muted">${order.userEmail || ''}</small>
+                        </td>
+                        <td>${date}</td>
+                        <td>${productCount} producto(s)</td>
+                        <td>$${(parseFloat(order.total) || 0).toFixed(2)}</td>
+                        <td><span class="badge ${getStatusBadgeClass(order.status)}">${order.status || 'pendiente'}</span></td>
+                        <td>
+                            ${order.receiptUrl ? 
+                                '<span class="badge bg-success">Comprobante</span>' : 
+                                '<span class="badge bg-secondary">Sin comprobante</span>'
+                            }
+                        </td>
+                        <td>
+                            <button class="btn-action btn-view me-1" onclick="viewOrderDetails('${order.id || order.orderNumber}')" title="Ver detalles">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit me-1" onclick="editOrderStatus('${order.id || order.orderNumber}')" title="Editar estado">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            ${order.status === 'pendiente' ? 
+                                `<button class="btn-action btn-process me-1" onclick="confirmOrderWithInventory('${order.id || order.orderNumber}')" title="Confirmar y descontar stock">
+                                    <i class="fas fa-check-circle"></i> Confirmar
+                                </button>` : ''
+                            }
+                            ${order.status === 'confirmado' || order.status === 'enviado' ?
+                                `<button class="btn-action btn-delete me-1" onclick="cancelOrderWithInventory('${order.id || order.orderNumber}')" title="Cancelar y restaurar stock">
+                                    <i class="fas fa-ban"></i> Cancelar
+                                </button>` : ''
+                            }
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function toggleOrderSelection(checkbox) {
+            const orderId = checkbox.value;
+            
+            if (checkbox.checked) {
+                selectedOrders.add(orderId);
+            } else {
+                selectedOrders.delete(orderId);
+            }
+            
+            updateBulkActions();
+        }
+
+        function toggleSelectAllOrders() {
+            const selectAll = document.getElementById('selectAllOrders');
+            if (!selectAll) return;
+            const isChecked = selectAll.checked;
+            const checkboxes = document.querySelectorAll('.order-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+                const orderId = checkbox.value;
+                
+                if (isChecked) {
+                    selectedOrders.add(orderId);
+                } else {
+                    selectedOrders.delete(orderId);
+                }
+            });
+            
+            updateBulkActions();
+        }
+
+        function updateBulkActions() {
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedOrders.size > 0 && bulkActions) {
+                bulkActions.style.display = 'block';
+                if (selectedCount) selectedCount.textContent = `${selectedOrders.size} pedidos seleccionados`;
+            } else if (bulkActions) {
+                bulkActions.style.display = 'none';
+            }
+        }
+
+        function clearOrderSelection() {
+            selectedOrders.clear();
+            const selectAll = document.getElementById('selectAllOrders');
+            if (selectAll) selectAll.checked = false;
+            document.querySelectorAll('.order-checkbox').forEach(cb => cb.checked = false);
+            updateBulkActions();
+        }
+
+        function applyBulkAction() {
+            const actionSelect = document.getElementById('bulkStatusAction');
+            if (!actionSelect) return;
+            const action = actionSelect.value;
+            
+            if (!action) {
+                showAlert('Selecciona una acción primero', 'warning');
+                return;
+            }
+
+            if (action === 'confirmado') {
+                processMultipleOrdersWithInventory(Array.from(selectedOrders));
+                return;
+            }
+            
+            if (!confirm(`¿Cambiar estado de ${selectedOrders.size} pedido(s) a "${action}"?`)) {
+                return;
+            }
+            
+            showLoading('Actualizando pedidos...');
+            
+            selectedOrders.forEach(orderId => {
+                updateOrderStatus(orderId, action);
+            });
+            
+            setTimeout(() => {
+                loadOrders();
+                loadDashboardData();
+                clearOrderSelection();
+                hideLoading();
+                showAlert(`${selectedOrders.size} pedido(s) actualizado(s)`, 'success');
+            }, 2000);
+        }
+
+        function viewOrderDetails(orderId) {
+            const order = allOrders.find(o => o.id === orderId || o.orderNumber === orderId);
+            
+            if (!order) {
+                showAlert('Pedido no encontrado', 'danger');
+                return;
+            }
+            
+            const modalOrderSpan = document.getElementById('modalOrderNumber');
+            if (modalOrderSpan) modalOrderSpan.textContent = order.orderNumber;
+            
+            const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Sin fecha';
+            
+            let itemsHtml = '';
+            if (order.items && order.items.length > 0) {
+                order.items.forEach(item => {
+                    itemsHtml += `
+                        <tr>
+                            <td>${item.name || 'Producto'}</td>
+                            <td class="text-center">${item.quantity || 1}</td>
+                            <td class="text-end">$${(parseFloat(item.price) || 0).toFixed(2)}</td>
+                            <td class="text-end">$${((parseFloat(item.price) || 0) * (item.quantity || 1)).toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Información del Pedido</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Número:</strong> ${order.orderNumber || 'N/A'}</p>
+                                <p><strong>Fecha:</strong> ${date}</p>
+                                <p><strong>Estado:</strong> <span class="badge ${getStatusBadgeClass(order.status)}">${order.status || 'pendiente'}</span></p>
+                                <p><strong>Método de Pago:</strong> ${order.paymentMethod || 'Transferencia'}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Información del Cliente</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Nombre:</strong> ${order.userName || 'No especificado'}</p>
+                                <p><strong>Email:</strong> ${order.userEmail || 'No especificado'}</p>
+                                ${order.userPhone ? `<p><strong>Teléfono:</strong> ${order.userPhone}</p>` : ''}
+                                ${order.userAddress ? `<p><strong>Dirección:</strong> ${order.userAddress}</p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Resumen del Pedido</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th class="text-center">Cantidad</th>
+                                                <th class="text-end">Precio</th>
+                                                <th class="text-end">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${itemsHtml}
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                                <td class="text-end">$${(parseFloat(order.subtotal) || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3" class="text-end"><strong>Envío:</strong></td>
+                                                <td class="text-end">$${(parseFloat(order.shipping) || 0).toFixed(2)}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                                <td class="text-end"><strong>$${(parseFloat(order.total) || 0).toFixed(2)}</strong></td>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Información de Pago</h6>
+                            </div>
+                            <div class="card-body">
+                                ${order.receiptUrl ? 
+                                    `<p><strong>Comprobante:</strong> <a href="${order.receiptUrl}" target="_blank">Ver comprobante</a></p>
+                                     <p><strong>Subido a Cloudinary:</strong> Sí</p>
+                                     ${order.receiptCloudinaryInfo ? 
+                                        `<p><strong>Carpeta:</strong> ${order.receiptCloudinaryInfo.folder || 'samples/depositos'}</p>
+                                         <p><strong>Preset:</strong> ${order.receiptCloudinaryInfo.preset || 'Depositos'}</p>` : 
+                                        ''
+                                     }` : 
+                                    '<p class="text-muted">No hay comprobante de pago</p>'
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const contentDiv = document.getElementById('orderDetailsContent');
+            if (contentDiv) contentDiv.innerHTML = content;
+            
+            const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+            modal.show();
+        }
+
+        function editOrderStatus(orderId) {
+            const order = allOrders.find(o => o.id === orderId || o.orderNumber === orderId);
+            
+            if (!order) {
+                showAlert('Pedido no encontrado', 'danger');
+                return;
+            }
+            
+            const newStatus = prompt('Nuevo estado del pedido:', order.status || 'pendiente');
+            
+            if (newStatus && newStatus !== order.status) {
+                updateOrderStatus(orderId, newStatus);
+            }
+        }
+
+        function processOrder(orderId) {
+            confirmOrderWithInventory(orderId);
+        }
+
+        function updateOrderStatus(orderId, newStatus) {
+            const orderIndex = allOrders.findIndex(o => o.id === orderId || o.orderNumber === orderId);
+            if (orderIndex !== -1) {
+                const oldStatus = allOrders[orderIndex].status;
+
+                if (newStatus === 'cancelado' && ['confirmado', 'enviado'].includes(oldStatus)) {
+                    restoreInventoryFromOrder(orderId).catch(console.error);
+                }
+
+                allOrders[orderIndex].status = newStatus;
+                allOrders[orderIndex].updatedAt = Date.now();
+                
+                if (firebaseDatabase && allOrders[orderIndex].id) {
+                    const orderRef = firebaseDatabase.ref('orders/' + allOrders[orderIndex].id);
+                    orderRef.update({
+                        status: newStatus,
+                        updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    }).catch(error => {
+                        console.error('Error actualizando en Firebase:', error);
+                    });
+                }
+                
+                updateLocalOrder(allOrders[orderIndex]);
+                
+                loadOrders();
+                loadDashboardData();
+                
+                showAlert(`Estado del pedido actualizado a "${newStatus}"`, 'success');
+            }
+        }
+
+        function updateLocalOrder(updatedOrder) {
+            try {
+                let localOrders = JSON.parse(localStorage.getItem('localOrders')) || [];
+                const index = localOrders.findIndex(o => o.orderNumber === updatedOrder.orderNumber);
+                
+                if (index !== -1) {
+                    localOrders[index] = updatedOrder;
+                } else {
+                    localOrders.push(updatedOrder);
+                }
+                
+                localStorage.setItem('localOrders', JSON.stringify(localOrders));
+            } catch (error) {
+                console.error('Error actualizando pedido local:', error);
+            }
+        }
+
+        function printOrderDetails() {
+            const content = document.getElementById('orderDetailsContent').innerHTML;
+            const title = document.getElementById('modalOrderNumber').textContent;
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Pedido ${title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                        .section { margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f5f5f5; }
+                        .total { font-weight: bold; font-size: 1.2em; }
+                        @media print {
+                            .no-print { display: none; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${content}
+                    <div class="no-print" style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #007bff; color: white; border: none; cursor: pointer;">
+                            Imprimir
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+        }
+
+        function printOrdersList() {
+            const filteredOrders = getFilteredOrdersForPrint();
+            
+            let tableHtml = '';
+            filteredOrders.forEach(order => {
+                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Sin fecha';
+                tableHtml += `
+                    <tr>
+                        <td>${order.orderNumber || 'N/A'}</td>
+                        <td>${order.userName || 'Cliente'}</td>
+                        <td>${date}</td>
+                        <td>$${(parseFloat(order.total) || 0).toFixed(2)}</td>
+                        <td>${order.status || 'pendiente'}</td>
+                    </tr>
+                `;
+            });
+            
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Lista de Pedidos</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { text-align: center; margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f5f5f5; }
+                        .total { font-weight: bold; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Lista de Pedidos</h1>
+                    <p><strong>Fecha de impresión:</strong> ${new Date().toLocaleDateString()}</p>
+                    <p><strong>Total de pedidos:</strong> ${filteredOrders.length}</p>
+                    
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Pedido #</th>
+                                <th>Cliente</th>
+                                <th>Fecha</th>
+                                <th>Total</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableHtml}
+                        </tbody>
+                    </table>
+                    
+                    <div class="total">
+                        <p>Ingresos totales: $${filteredOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0).toFixed(2)}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function getFilteredOrdersForPrint() {
+            const status = document.getElementById('orderStatusFilter').value;
+            const dateFrom = document.getElementById('orderDateFrom').value;
+            const dateTo = document.getElementById('orderDateTo').value;
+            
+            let filteredOrders = [...allOrders];
+            
+            if (status) {
+                filteredOrders = filteredOrders.filter(order => order.status === status);
+            }
+            
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom).getTime();
+                filteredOrders = filteredOrders.filter(order => order.createdAt >= fromDate);
+            }
+            
+            if (dateTo) {
+                const toDate = new Date(dateTo + 'T23:59:59').getTime();
+                filteredOrders = filteredOrders.filter(order => order.createdAt <= toDate);
+            }
+            
+            return filteredOrders;
+        }
+
+        function exportOrders() {
+            const filteredOrders = getFilteredOrdersForPrint();
+            
+            let csv = 'Pedido #,Cliente,Email,Fecha,Total,Estado,Método Pago\n';
+            
+            filteredOrders.forEach(order => {
+                const date = order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '';
+                csv += `"${order.orderNumber || ''}","${order.userName || ''}","${order.userEmail || ''}","${date}",${parseFloat(order.total) || 0},"${order.status || ''}","${order.paymentMethod || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pedidos_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert(`Exportados ${filteredOrders.length} pedidos`, 'success');
+        }
+
+        function refreshOrders() {
+            loadOrders();
+        }
+
+        function loadPayments() {
+            allPayments = [];
+            
+            allOrders.forEach(order => {
+                if (order.receiptUrl) {
+                    allPayments.push({
+                        id: order.orderNumber,
+                        orderNumber: order.orderNumber,
+                        customerName: order.userName,
+                        amount: order.total,
+                        method: order.paymentMethod || 'transferencia',
+                        date: order.createdAt,
+                        status: order.status === 'pendiente' ? 'pendiente' : 'confirmado',
+                        receiptUrl: order.receiptUrl
+                    });
+                }
+            });
+            
+            updatePaymentsTable();
+        }
+
+        function applyPaymentFilters() {
+            const status = document.getElementById('paymentStatusFilter').value;
+            const method = document.getElementById('paymentMethodFilter').value;
+            
+            let filteredPayments = [...allPayments];
+            
+            if (status) {
+                filteredPayments = filteredPayments.filter(payment => payment.status === status);
+            }
+            
+            if (method) {
+                filteredPayments = filteredPayments.filter(payment => payment.method === method);
+            }
+            
+            updatePaymentsTable(filteredPayments);
+        }
+
+        function updatePaymentsTable(payments = allPayments) {
+            const tbody = document.getElementById('paymentsTableBody');
+            if (!tbody) return;
+            
+            if (payments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center">No hay pagos registrados</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const sortedPayments = [...payments].sort((a, b) => (b.date || 0) - (a.date || 0));
+            
+            let html = '';
+            sortedPayments.forEach(payment => {
+                const date = payment.date ? new Date(payment.date).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) : 'Sin fecha';
+                
+                html += `
+                    <tr>
+                        <td>${payment.id || 'N/A'}</td>
+                        <td><strong>${payment.orderNumber || 'N/A'}</strong></td>
+                        <td>${payment.customerName || 'Cliente'}</td>
+                        <td>$${(parseFloat(payment.amount) || 0).toFixed(2)}</td>
+                        <td>${payment.method || 'transferencia'}</td>
+                        <td>${date}</td>
+                        <td><span class="badge ${getPaymentStatusClass(payment.status)}">${payment.status || 'pendiente'}</span></td>
+                        <td>
+                            ${payment.receiptUrl ? 
+                                `<a href="${payment.receiptUrl}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-download"></i>
+                                </a>` : 
+                                'N/A'
+                            }
+                        </td>
+                        <td>
+                            <button class="btn-action btn-view me-1" onclick="viewPaymentDetails('${payment.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit" onclick="editPaymentStatus('${payment.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function viewPaymentDetails(paymentId) {
+            const payment = allPayments.find(p => p.id === paymentId);
+            
+            if (!payment) {
+                showAlert('Pago no encontrado', 'danger');
+                return;
+            }
+            
+            const date = payment.date ? new Date(payment.date).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Sin fecha';
+            
+            const content = `
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title">Detalles del Pago</h6>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <p><strong>ID de Pago:</strong> ${payment.id}</p>
+                                <p><strong>Pedido #:</strong> ${payment.orderNumber}</p>
+                                <p><strong>Cliente:</strong> ${payment.customerName}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Fecha:</strong> ${date}</p>
+                                <p><strong>Método:</strong> ${payment.method}</p>
+                                <p><strong>Estado:</strong> <span class="badge ${getPaymentStatusClass(payment.status)}">${payment.status}</span></p>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <p><strong>Monto:</strong> $${(parseFloat(payment.amount) || 0).toFixed(2)}</p>
+                        </div>
+                        
+                        ${payment.receiptUrl ? 
+                            `<div class="mb-3">
+                                <p><strong>Comprobante:</strong></p>
+                                <a href="${payment.receiptUrl}" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-download me-2"></i> Ver Comprobante
+                                </a>
+                            </div>` : 
+                            ''
+                        }
+                    </div>
+                </div>
+            `;
+            
+            const contentDiv = document.getElementById('paymentDetailsContent');
+            if (contentDiv) contentDiv.innerHTML = content;
+            
+            const modal = new bootstrap.Modal(document.getElementById('paymentDetailsModal'));
+            modal.show();
+        }
+
+        function editPaymentStatus(paymentId) {
+            const payment = allPayments.find(p => p.id === paymentId);
+            
+            if (!payment) {
+                showAlert('Pago no encontrado', 'danger');
+                return;
+            }
+            
+            const newStatus = prompt('Nuevo estado del pago:', payment.status || 'pendiente');
+            
+            if (newStatus && newStatus !== payment.status) {
+                payment.status = newStatus;
+                
+                const orderIndex = allOrders.findIndex(o => o.orderNumber === payment.orderNumber);
+                if (orderIndex !== -1) {
+                    if (newStatus === 'confirmado') {
+                        allOrders[orderIndex].status = 'confirmado';
+                    } else if (newStatus === 'rechazado') {
+                        allOrders[orderIndex].status = 'cancelado';
+                    }
+                    
+                    updateLocalOrder(allOrders[orderIndex]);
+                }
+                
+                updatePaymentsTable();
+                showAlert('Estado del pago actualizado', 'success');
+            }
+        }
+
+        function exportPayments() {
+            let csv = 'ID,Pedido #,Cliente,Monto,Método,Fecha,Estado\n';
+            
+            allPayments.forEach(payment => {
+                const date = payment.date ? new Date(payment.date).toLocaleDateString() : '';
+                csv += `"${payment.id || ''}","${payment.orderNumber || ''}","${payment.customerName || ''}",${parseFloat(payment.amount) || 0},"${payment.method || ''}","${date}","${payment.status || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `pagos_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert(`Exportados ${allPayments.length} pagos`, 'success');
+        }
+
+        function refreshPayments() {
+            loadPayments();
+        }
+
+        function loadCustomers() {
+            const customersMap = new Map();
+            
+            allOrders.forEach(order => {
+                if (order.userEmail) {
+                    if (!customersMap.has(order.userEmail)) {
+                        customersMap.set(order.userEmail, {
+                            id: order.userId || order.userEmail,
+                            name: order.userName || 'Cliente',
+                            email: order.userEmail,
+                            phone: order.userPhone || '',
+                            address: order.userAddress || '',
+                            registrationDate: order.createdAt,
+                            orderCount: 1,
+                            totalSpent: parseFloat(order.total) || 0
+                        });
+                    } else {
+                        const customer = customersMap.get(order.userEmail);
+                        customer.orderCount += 1;
+                        customer.totalSpent += parseFloat(order.total) || 0;
+                    }
+                }
+            });
+            
+            allCustomers = Array.from(customersMap.values());
+            updateCustomersTable();
+        }
+
+        function searchCustomers() {
+            const searchTerm = document.getElementById('customerSearch').value.toLowerCase();
+            const dateFrom = document.getElementById('customerDateFrom').value;
+            
+            let filteredCustomers = [...allCustomers];
+            
+            if (searchTerm) {
+                filteredCustomers = filteredCustomers.filter(customer =>
+                    customer.name.toLowerCase().includes(searchTerm) ||
+                    customer.email.toLowerCase().includes(searchTerm) ||
+                    customer.phone.toLowerCase().includes(searchTerm)
+                );
+            }
+            
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom).getTime();
+                filteredCustomers = filteredCustomers.filter(customer => 
+                    customer.registrationDate >= fromDate
+                );
+            }
+            
+            updateCustomersTable(filteredCustomers);
+        }
+
+        function updateCustomersTable(customers = allCustomers) {
+            const tbody = document.getElementById('customersTableBody');
+            if (!tbody) return;
+            
+            if (customers.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">No hay clientes registrados</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            customers.forEach(customer => {
+                const regDate = customer.registrationDate ? new Date(customer.registrationDate).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) : 'Sin fecha';
+                
+                html += `
+                    <tr>
+                        <td>${customer.id.substring(0, 8)}...</td>
+                        <td>${customer.name}</td>
+                        <td>${customer.email}</td>
+                        <td>${customer.phone || 'N/A'}</td>
+                        <td>${regDate}</td>
+                        <td class="text-center">${customer.orderCount}</td>
+                        <td>$${customer.totalSpent.toFixed(2)}</td>
+                        <td>
+                            <button class="btn-action btn-view me-1" onclick="viewCustomerDetails('${customer.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-edit me-1" onclick="editCustomer('${customer.id}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteCustomer('${customer.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function showAddCustomerModal() {
+            const modalTitle = document.getElementById('customerModalTitle');
+            if (modalTitle) modalTitle.textContent = 'Nuevo Cliente';
+            const form = document.getElementById('customerForm');
+            if (form) form.reset();
+            
+            const modal = new bootstrap.Modal(document.getElementById('customerModal'));
+            modal.show();
+        }
+
+        function saveCustomer() {
+            const name = document.getElementById('customerName').value;
+            const email = document.getElementById('customerEmail').value;
+            const phone = document.getElementById('customerPhone').value;
+            const address = document.getElementById('customerAddress').value;
+            const city = document.getElementById('customerCity').value;
+            const zip = document.getElementById('customerZip').value;
+            const notes = document.getElementById('customerNotes').value;
+            
+            if (!name || !email) {
+                showAlert('Nombre y email son requeridos', 'warning');
+                return;
+            }
+            
+            const newCustomer = {
+                id: 'customer-' + Date.now(),
+                name: name,
+                email: email,
+                phone: phone,
+                address: address,
+                city: city,
+                zip: zip,
+                notes: notes,
+                registrationDate: Date.now(),
+                orderCount: 0,
+                totalSpent: 0
+            };
+            
+            allCustomers.push(newCustomer);
+            
+            saveCustomerToLocalStorage(newCustomer);
+            
+            updateCustomersTable();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('customerModal'));
+            if (modal) modal.hide();
+            
+            showAlert('Cliente guardado exitosamente', 'success');
+        }
+
+        function saveCustomerToLocalStorage(customer) {
+            try {
+                let customers = JSON.parse(localStorage.getItem('adminCustomers')) || [];
+                customers.push(customer);
+                localStorage.setItem('adminCustomers', JSON.stringify(customers));
+            } catch (error) {
+                console.error('Error guardando cliente:', error);
+            }
+        }
+
+        function viewCustomerDetails(customerId) {
+            const customer = allCustomers.find(c => c.id === customerId);
+            
+            if (!customer) {
+                showAlert('Cliente no encontrado', 'danger');
+                return;
+            }
+            
+            const regDate = customer.registrationDate ? new Date(customer.registrationDate).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Sin fecha';
+            
+            const customerOrders = allOrders.filter(order => order.userEmail === customer.email);
+            
+            let ordersHtml = '';
+            if (customerOrders.length > 0) {
+                customerOrders.slice(0, 5).forEach(order => {
+                    const orderDate = order.createdAt ? new Date(order.createdAt).toLocaleDateString('es-ES', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    }) : 'Sin fecha';
+                    
+                    ordersHtml += `
+                        <tr>
+                            <td>${order.orderNumber}</td>
+                            <td>${orderDate}</td>
+                            <td>$${(parseFloat(order.total) || 0).toFixed(2)}</td>
+                            <td><span class="badge ${getStatusBadgeClass(order.status)}">${order.status || 'pendiente'}</span></td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            const content = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Información del Cliente</h6>
+                            </div>
+                            <div class="card-body">
+                                <p><strong>Nombre:</strong> ${customer.name}</p>
+                                <p><strong>Email:</strong> ${customer.email}</p>
+                                ${customer.phone ? `<p><strong>Teléfono:</strong> ${customer.phone}</p>` : ''}
+                                ${customer.address ? `<p><strong>Dirección:</strong> ${customer.address}</p>` : ''}
+                                ${customer.city ? `<p><strong>Ciudad:</strong> ${customer.city}</p>` : ''}
+                                ${customer.zip ? `<p><strong>Código Postal:</strong> ${customer.zip}</p>` : ''}
+                                <p><strong>Fecha de Registro:</strong> ${regDate}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Estadísticas</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row text-center">
+                                    <div class="col-6">
+                                        <h3>${customer.orderCount}</h3>
+                                        <p class="text-muted">Pedidos</p>
+                                    </div>
+                                    <div class="col-6">
+                                        <h3>$${customer.totalSpent.toFixed(2)}</h3>
+                                        <p class="text-muted">Total Gastado</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${customerOrders.length > 0 ? `
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">Pedidos Recientes (${customerOrders.length} total)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Pedido #</th>
+                                        <th>Fecha</th>
+                                        <th>Total</th>
+                                        <th>Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${ordersHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${customerOrders.length > 5 ? 
+                            `<p class="text-center mt-2">
+                                <a href="#" onclick="showCustomerOrders('${customer.email}')">Ver todos los pedidos</a>
+                            </p>` : 
+                            ''
+                        }
+                    </div>
+                </div>` : 
+                '<p class="text-muted">Este cliente no ha realizado pedidos aún.</p>'
+                }
+            `;
+            
+            const contentDiv = document.getElementById('customerDetailsContent');
+            if (contentDiv) contentDiv.innerHTML = content;
+            
+            const modal = new bootstrap.Modal(document.getElementById('customerDetailsModal'));
+            modal.show();
+        }
+
+        function showCustomerOrders(customerEmail) {
+            const customerFilter = document.getElementById('orderCustomerFilter');
+            if (customerFilter) customerFilter.value = customerEmail;
+            showOrders();
+            applyOrderFilters();
+        }
+
+        function editCustomer(customerId) {
+            const customer = allCustomers.find(c => c.id === customerId);
+            
+            if (!customer) {
+                showAlert('Cliente no encontrado', 'danger');
+                return;
+            }
+            
+            const modalTitle = document.getElementById('customerModalTitle');
+            if (modalTitle) modalTitle.textContent = 'Editar Cliente';
+            
+            const nameInput = document.getElementById('customerName');
+            const emailInput = document.getElementById('customerEmail');
+            const phoneInput = document.getElementById('customerPhone');
+            const addressInput = document.getElementById('customerAddress');
+            const cityInput = document.getElementById('customerCity');
+            const zipInput = document.getElementById('customerZip');
+            const notesInput = document.getElementById('customerNotes');
+            
+            if (nameInput) nameInput.value = customer.name;
+            if (emailInput) emailInput.value = customer.email;
+            if (phoneInput) phoneInput.value = customer.phone || '';
+            if (addressInput) addressInput.value = customer.address || '';
+            if (cityInput) cityInput.value = customer.city || '';
+            if (zipInput) zipInput.value = customer.zip || '';
+            if (notesInput) notesInput.value = customer.notes || '';
+            
+            const modalElement = document.getElementById('customerModal');
+            if (modalElement) modalElement.dataset.customerId = customerId;
+            
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+
+        function deleteCustomer(customerId) {
+            if (!confirm('¿Estás seguro de eliminar este cliente?')) {
+                return;
+            }
+            
+            const index = allCustomers.findIndex(c => c.id === customerId);
+            if (index !== -1) {
+                allCustomers.splice(index, 1);
+                
+                try {
+                    let customers = JSON.parse(localStorage.getItem('adminCustomers')) || [];
+                    customers = customers.filter(c => c.id !== customerId);
+                    localStorage.setItem('adminCustomers', JSON.stringify(customers));
+                } catch (error) {
+                    console.error('Error eliminando cliente:', error);
+                }
+                
+                updateCustomersTable();
+                showAlert('Cliente eliminado', 'success');
+            }
+        }
+
+        function exportCustomers() {
+            let csv = 'ID,Nombre,Email,Teléfono,Dirección,Fecha Registro,Pedidos,Total Gastado\n';
+            
+            allCustomers.forEach(customer => {
+                const regDate = customer.registrationDate ? new Date(customer.registrationDate).toLocaleDateString() : '';
+                csv += `"${customer.id || ''}","${customer.name || ''}","${customer.email || ''}","${customer.phone || ''}","${customer.address || ''}","${regDate}",${customer.orderCount},${customer.totalSpent.toFixed(2)}\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `clientes_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert(`Exportados ${allCustomers.length} clientes`, 'success');
+        }
+
+        function refreshCustomers() {
+            loadCustomers();
+        }
+
+        function loadRefunds() {
+            try {
+                allRefunds = JSON.parse(localStorage.getItem('adminRefunds')) || [];
+            } catch (error) {
+                allRefunds = [];
+                console.error('Error cargando devoluciones:', error);
+            }
+            
+            updateRefundsTable();
+            updatePendingRefundsCount();
+        }
+
+        function applyRefundFilters() {
+            const status = document.getElementById('refundStatusFilter').value;
+            
+            let filteredRefunds = [...allRefunds];
+            
+            if (status) {
+                filteredRefunds = filteredRefunds.filter(refund => refund.status === status);
+            }
+            
+            updateRefundsTable(filteredRefunds);
+        }
+
+        function updateRefundsTable(refunds = allRefunds) {
+            const tbody = document.getElementById('refundsTableBody');
+            if (!tbody) return;
+            
+            if (refunds.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center">No hay devoluciones registradas</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            refunds.forEach(refund => {
+                const date = refund.date ? new Date(refund.date).toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                }) : 'Sin fecha';
+                
+                html += `
+                    <tr>
+                        <td>${refund.id || 'N/A'}</td>
+                        <td><strong>${refund.orderNumber || 'N/A'}</strong></td>
+                        <td>${refund.customerName || 'Cliente'}</td>
+                        <td>${refund.reason || 'Sin motivo'}</td>
+                        <td>$${(parseFloat(refund.amount) || 0).toFixed(2)}</td>
+                        <td>${date}</td>
+                        <td><span class="badge ${getRefundStatusClass(refund.status)}">${refund.status || 'pendiente'}</span></td>
+                        <td>
+                            <button class="btn-action btn-view me-1" onclick="viewRefundDetails('${refund.id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn-action btn-process me-1" onclick="processRefund('${refund.id}')">
+                                <i class="fas fa-forward"></i>
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteRefund('${refund.id}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                         </td>
+                     </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function showAddRefundModal() {
+            const orderOptions = allOrders.map(order => 
+                `<option value="${order.orderNumber}">${order.orderNumber} - ${order.userName} - $${(parseFloat(order.total) || 0).toFixed(2)}</option>`
+            ).join('');
+            
+            const modalHtml = `
+                <div class="modal fade" id="addRefundModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Nueva Devolución</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="refundForm">
+                                    <div class="mb-3">
+                                        <label class="form-label">Pedido</label>
+                                        <select class="form-select" id="refundOrder" required>
+                                            <option value="">Seleccionar pedido...</option>
+                                            ${orderOptions}
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Motivo</label>
+                                        <select class="form-select" id="refundReason" required>
+                                            <option value="">Seleccionar motivo...</option>
+                                            <option value="producto_danado">Producto dañado</option>
+                                            <option value="producto_incorrecto">Producto incorrecto</option>
+                                            <option value="talla_incorrecta">Talla incorrecta</option>
+                                            <option value="arrepentimiento">Arrepentimiento de compra</option>
+                                            <option value="calidad">Problema de calidad</option>
+                                            <option value="otro">Otro</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Monto a Reembolsar ($)</label>
+                                        <input type="number" class="form-control" id="refundAmount" step="0.01" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Notas Adicionales</label>
+                                        <textarea class="form-control" id="refundNotes" rows="3"></textarea>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                <button type="button" class="btn btn-primary" onclick="saveRefund()">Guardar Devolución</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const modalContainer = document.createElement('div');
+            modalContainer.innerHTML = modalHtml;
+            document.body.appendChild(modalContainer);
+            
+            const modal = new bootstrap.Modal(document.getElementById('addRefundModal'));
+            modal.show();
+            
+            const refundOrder = document.getElementById('refundOrder');
+            if (refundOrder) {
+                refundOrder.addEventListener('change', function() {
+                    const orderNumber = this.value;
+                    const order = allOrders.find(o => o.orderNumber === orderNumber);
+                    const refundAmount = document.getElementById('refundAmount');
+                    if (order && order.total && refundAmount) {
+                        refundAmount.value = parseFloat(order.total).toFixed(2);
+                    }
+                });
+            }
+            
+            document.getElementById('addRefundModal').addEventListener('hidden.bs.modal', function() {
+                document.body.removeChild(modalContainer);
+            });
+        }
+
+        function saveRefund() {
+            const orderNumber = document.getElementById('refundOrder').value;
+            const reason = document.getElementById('refundReason').value;
+            const amount = parseFloat(document.getElementById('refundAmount').value);
+            const notes = document.getElementById('refundNotes').value;
+            
+            if (!orderNumber || !reason || isNaN(amount)) {
+                showAlert('Complete todos los campos requeridos', 'warning');
+                return;
+            }
+            
+            const order = allOrders.find(o => o.orderNumber === orderNumber);
+            if (!order) {
+                showAlert('Pedido no encontrado', 'danger');
+                return;
+            }
+            
+            const newRefund = {
+                id: 'refund-' + Date.now(),
+                orderNumber: orderNumber,
+                customerName: order.userName,
+                customerEmail: order.userEmail,
+                reason: reason,
+                amount: amount,
+                notes: notes,
+                date: Date.now(),
+                status: 'pendiente'
+            };
+            
+            allRefunds.push(newRefund);
+            
+            try {
+                localStorage.setItem('adminRefunds', JSON.stringify(allRefunds));
+            } catch (error) {
+                console.error('Error guardando devolución:', error);
+            }
+            
+            updateRefundsTable();
+            updatePendingRefundsCount();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addRefundModal'));
+            if (modal) modal.hide();
+            
+            showAlert('Devolución registrada exitosamente', 'success');
+        }
+
+        function viewRefundDetails(refundId) {
+            const refund = allRefunds.find(r => r.id === refundId);
+            
+            if (!refund) {
+                showAlert('Devolución no encontrada', 'danger');
+                return;
+            }
+            
+            const date = refund.date ? new Date(refund.date).toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }) : 'Sin fecha';
+            
+            alert(`
+                Detalles de la Devolución:
+                
+                ID: ${refund.id}
+                Pedido: ${refund.orderNumber}
+                Cliente: ${refund.customerName}
+                Motivo: ${refund.reason}
+                Monto: $${(parseFloat(refund.amount) || 0).toFixed(2)}
+                Fecha: ${date}
+                Estado: ${refund.status}
+                
+                Notas:
+                ${refund.notes || 'Sin notas adicionales'}
+            `);
+        }
+
+        function processRefund(refundId) {
+            const refund = allRefunds.find(r => r.id === refundId);
+            
+            if (!refund) {
+                showAlert('Devolución no encontrada', 'danger');
+                return;
+            }
+            
+            let nextStatus = 'procesando';
+            switch(refund.status) {
+                case 'pendiente': nextStatus = 'procesando'; break;
+                case 'procesando': nextStatus = 'completado'; break;
+                default: nextStatus = 'completado';
+            }
+            
+            if (confirm(`¿Cambiar estado de la devolución de "${refund.status}" a "${nextStatus}"?`)) {
+                refund.status = nextStatus;
+                
+                try {
+                    localStorage.setItem('adminRefunds', JSON.stringify(allRefunds));
+                } catch (error) {
+                    console.error('Error actualizando devolución:', error);
+                }
+                
+                updateRefundsTable();
+                updatePendingRefundsCount();
+                
+                showAlert(`Devolución marcada como "${nextStatus}"`, 'success');
+            }
+        }
+
+        function deleteRefund(refundId) {
+            if (!confirm('¿Estás seguro de eliminar esta devolución?')) {
+                return;
+            }
+            
+            const index = allRefunds.findIndex(r => r.id === refundId);
+            if (index !== -1) {
+                allRefunds.splice(index, 1);
+                
+                try {
+                    localStorage.setItem('adminRefunds', JSON.stringify(allRefunds));
+                } catch (error) {
+                    console.error('Error eliminando devolución:', error);
+                }
+                
+                updateRefundsTable();
+                updatePendingRefundsCount();
+                
+                showAlert('Devolución eliminada', 'success');
+            }
+        }
+
+        function updatePendingRefundsCount() {
+            const pendingRefunds = allRefunds.filter(refund => refund.status === 'pendiente');
+            const badge = document.getElementById('pendingRefundsBadge');
+            if (badge) badge.textContent = pendingRefunds.length;
+        }
+
+        function exportRefunds() {
+            let csv = 'ID,Pedido #,Cliente,Motivo,Monto,Fecha,Estado,Notas\n';
+            
+            allRefunds.forEach(refund => {
+                const date = refund.date ? new Date(refund.date).toLocaleDateString() : '';
+                csv += `"${refund.id || ''}","${refund.orderNumber || ''}","${refund.customerName || ''}","${refund.reason || ''}",${parseFloat(refund.amount) || 0},"${date}","${refund.status || ''}","${refund.notes || ''}"\n`;
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `devoluciones_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showAlert(`Exportadas ${allRefunds.length} devoluciones`, 'success');
+        }
+
+        function refreshRefunds() {
+            loadRefunds();
+        }
+
+        function loadReports() {
+            const avgOrderValue = allOrders.length > 0 ? 
+                allOrders.reduce((sum, order) => sum + (parseFloat(order.total) || 0), 0) / allOrders.length : 0;
+            
+            const conversionRate = Math.min(100, Math.floor(Math.random() * 30) + 5);
+            const customerRetention = Math.min(100, Math.floor(Math.random() * 40) + 30);
+            
+            const avgSpan = document.getElementById('avgOrderValue');
+            const convSpan = document.getElementById('conversionRate');
+            const retSpan = document.getElementById('customerRetention');
+            
+            if (avgSpan) avgSpan.textContent = '$' + avgOrderValue.toFixed(2);
+            if (convSpan) convSpan.textContent = conversionRate + '%';
+            if (retSpan) retSpan.textContent = customerRetention + '%';
+            
+            loadTopProducts();
+        }
+
+        function loadTopProducts() {
+            const topProducts = [
+                { name: 'Collar de Diamantes', quantity: 42, revenue: 12500 },
+                { name: 'Reloj de Lujo', quantity: 28, revenue: 8400 },
+                { name: 'Anillo de Oro', quantity: 35, revenue: 7000 },
+                { name: 'Perfume Exclusivo', quantity: 50, revenue: 5000 },
+                { name: 'Vestido de Noche', quantity: 22, revenue: 4400 }
+            ];
+            
+            const tbody = document.getElementById('topProductsBody');
+            if (!tbody) return;
+            
+            let html = '';
+            topProducts.forEach(product => {
+                const trend = Math.random() > 0.5 ? '↗️' : '↘️';
+                html += `
+                    <tr>
+                        <td>${product.name}</td>
+                        <td>${product.quantity}</td>
+                        <td>$${product.revenue.toFixed(2)}</td>
+                        <td>${trend}</td>
+                     </tr>
+                `;
+            });
+            
+            tbody.innerHTML = html;
+        }
+
+        function generateReport() {
+            const reportType = document.getElementById('reportType').value;
+            const period = document.getElementById('reportPeriod').value;
+            const format = document.getElementById('reportFormat').value;
+            
+            showLoading('Generando reporte...');
+            
+            setTimeout(() => {
+                hideLoading();
+                
+                if (format === 'print') {
+                    printReport(reportType, period);
+                } else {
+                    downloadReport(reportType, period, format);
+                }
+            }, 2000);
+        }
+
+        function printReport(type, period) {
+            const printWindow = window.open('', '_blank');
+            const title = `Reporte de ${type} - ${period}`;
+            const date = new Date().toLocaleDateString();
+            
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${title}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; padding: 20px; }
+                        h1 { text-align: center; margin-bottom: 30px; }
+                        .header { margin-bottom: 30px; }
+                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f5f5f5; }
+                        .total { font-weight: bold; font-size: 1.2em; margin-top: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>${title}</h1>
+                    <div class="header">
+                        <p><strong>Fecha de generación:</strong> ${date}</p>
+                        <p><strong>Período:</strong> ${period}</p>
+                    </div>
+                    
+                    <p>Este es un reporte de muestra. En una implementación completa, aquí se mostrarían los datos reales.</p>
+                    
+                    <div class="total">
+                        <p>Total de registros: 150</p>
+                        <p>Ingresos totales: $25,430.50</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        function downloadReport(type, period, format) {
+            const filename = `reporte_${type}_${period}_${new Date().toISOString().split('T')[0]}.${format}`;
+            
+            const link = document.createElement('a');
+            link.href = '#';
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert(`Reporte "${filename}" generado exitosamente`, 'success');
+        }
+
+        // ============================================
+        // FUNCIONES DE CONFIGURACIÓN (GUARDADO EN FIREBASE)
+        // ============================================
+        
+        function loadAllSettingsIntoForms() {
+            if (!firebaseDatabase) return;
+            const settingsRef = firebaseDatabase.ref('settings');
+            settingsRef.once('value').then(snapshot => {
+                const settings = snapshot.val() || {};
+                
+                const nameInput = document.getElementById('storeName');
+                const emailInput = document.getElementById('storeEmail');
+                const phoneInput = document.getElementById('storePhone');
+                const addressInput = document.getElementById('storeAddress');
+                const currencySelect = document.getElementById('storeCurrency');
+                
+                if (nameInput) nameInput.value = settings.general?.storeName || 'LuxuryShop';
+                if (emailInput) emailInput.value = settings.general?.storeEmail || 'info@luxuryshop.com';
+                if (phoneInput) phoneInput.value = settings.general?.storePhone || '+1 234 567 890';
+                if (addressInput) addressInput.value = settings.general?.storeAddress || 'Av. Principal 123, Ciudad';
+                if (currencySelect) currencySelect.value = settings.general?.storeCurrency || 'USD';
+                
+                const payMethodTransfer = document.getElementById('payMethodTransfer');
+                const payMethodCard = document.getElementById('payMethodCard');
+                const payMethodCash = document.getElementById('payMethodCash');
+                const bankInfo = document.getElementById('bankInfo');
+                
+                if (payMethodTransfer) payMethodTransfer.checked = settings.payment?.methods?.transferencia !== false;
+                if (payMethodCard) payMethodCard.checked = settings.payment?.methods?.tarjeta === true;
+                if (payMethodCash) payMethodCash.checked = settings.payment?.methods?.efectivo === true;
+                if (bankInfo) bankInfo.value = settings.payment?.bankInfo || 'Banco: Banco Nacional\nCuenta: 123-456789-0\nTitular: LuxuryShop S.A.\nCLABE: 012180012345678900';
+                
+                const shippingCost = document.getElementById('shippingCost');
+                const shippingTime = document.getElementById('shippingTime');
+                const shippingMethod = document.getElementById('shippingMethod');
+                
+                if (shippingCost) shippingCost.value = settings.shipping?.cost || 5.00;
+                if (shippingTime) shippingTime.value = settings.shipping?.time || '3-5 días hábiles';
+                if (shippingMethod) shippingMethod.value = settings.shipping?.method || 'estandar';
+                
+                const adminEmail = document.getElementById('adminNotificationEmail');
+                const notifyNewOrder = document.getElementById('notifyNewOrder');
+                const notifyPayment = document.getElementById('notifyPayment');
+                
+                if (adminEmail) adminEmail.value = settings.notifications?.adminEmail || 'admin@luxuryshop.com';
+                if (notifyNewOrder) notifyNewOrder.checked = settings.notifications?.notifyNewOrder !== false;
+                if (notifyPayment) notifyPayment.checked = settings.notifications?.notifyPayment !== false;
+                
+                const defaultRole = document.getElementById('defaultUserRole');
+                const allowRegistration = document.getElementById('allowRegistration');
+                
+                if (defaultRole) defaultRole.value = settings.users?.defaultRole || 'cliente';
+                if (allowRegistration) allowRegistration.checked = settings.users?.allowRegistration !== false;
+                
+                const apiCloudName = document.getElementById('apiCloudName');
+                const apiUploadPreset = document.getElementById('apiUploadPreset');
+                const apiCloudFolder = document.getElementById('apiCloudFolder');
+                
+                if (apiCloudName) apiCloudName.value = settings.api?.cloudinaryCloudName || 'djelnkrtm';
+                if (apiUploadPreset) apiUploadPreset.value = settings.api?.cloudinaryUploadPreset || 'Depositos';
+                if (apiCloudFolder) apiCloudFolder.value = settings.api?.cloudinaryFolder || 'samples/depositos';
+            }).catch(error => console.error('Error cargando configuraciones:', error));
+        }
+
+        function saveGeneralSettings() {
+            const settings = {
+                storeName: document.getElementById('storeName').value,
+                storeEmail: document.getElementById('storeEmail').value,
+                storePhone: document.getElementById('storePhone').value,
+                storeAddress: document.getElementById('storeAddress').value,
+                storeCurrency: document.getElementById('storeCurrency').value
+            };
+            saveToFirebase('settings/general', settings, 'Configuración general guardada');
+        }
+
+        function savePaymentSettings() {
+            const payMethodTransfer = document.getElementById('payMethodTransfer');
+            const payMethodCard = document.getElementById('payMethodCard');
+            const payMethodCash = document.getElementById('payMethodCash');
+            const bankInfo = document.getElementById('bankInfo');
+            
+            const settings = {
+                methods: {
+                    transferencia: payMethodTransfer ? payMethodTransfer.checked : true,
+                    tarjeta: payMethodCard ? payMethodCard.checked : false,
+                    efectivo: payMethodCash ? payMethodCash.checked : false
+                },
+                bankInfo: bankInfo ? bankInfo.value : ''
+            };
+            saveToFirebase('settings/payment', settings, 'Configuración de pagos guardada');
+        }
+
+        function saveShippingSettings() {
+            const shippingCost = document.getElementById('shippingCost');
+            const shippingTime = document.getElementById('shippingTime');
+            const shippingMethod = document.getElementById('shippingMethod');
+            
+            const settings = {
+                cost: shippingCost ? parseFloat(shippingCost.value) : 5.00,
+                time: shippingTime ? shippingTime.value : '3-5 días hábiles',
+                method: shippingMethod ? shippingMethod.value : 'estandar'
+            };
+            saveToFirebase('settings/shipping', settings, 'Configuración de envíos guardada');
+        }
+
+        function saveNotificationSettings() {
+            const adminEmail = document.getElementById('adminNotificationEmail');
+            const notifyNewOrder = document.getElementById('notifyNewOrder');
+            const notifyPayment = document.getElementById('notifyPayment');
+            
+            const settings = {
+                adminEmail: adminEmail ? adminEmail.value : 'admin@luxuryshop.com',
+                notifyNewOrder: notifyNewOrder ? notifyNewOrder.checked : true,
+                notifyPayment: notifyPayment ? notifyPayment.checked : true
+            };
+            saveToFirebase('settings/notifications', settings, 'Configuración de notificaciones guardada');
+        }
+
+        function saveUsersSettings() {
+            const defaultRole = document.getElementById('defaultUserRole');
+            const allowRegistration = document.getElementById('allowRegistration');
+            
+            const settings = {
+                defaultRole: defaultRole ? defaultRole.value : 'cliente',
+                allowRegistration: allowRegistration ? allowRegistration.checked : true
+            };
+            saveToFirebase('settings/users', settings, 'Configuración de usuarios guardada');
+        }
+
+        function saveApiSettings() {
+            const apiCloudName = document.getElementById('apiCloudName');
+            const apiUploadPreset = document.getElementById('apiUploadPreset');
+            const apiCloudFolder = document.getElementById('apiCloudFolder');
+            
+            const settings = {
+                cloudinaryCloudName: apiCloudName ? apiCloudName.value : 'djelnkrtm',
+                cloudinaryUploadPreset: apiUploadPreset ? apiUploadPreset.value : 'Depositos',
+                cloudinaryFolder: apiCloudFolder ? apiCloudFolder.value : 'samples/depositos'
+            };
+            saveToFirebase('settings/api', settings, 'Configuración de API guardada');
+        }
+
+        function saveToFirebase(path, data, successMessage) {
+            if (!firebaseDatabase) {
+                showAlert('Firebase no disponible', 'danger');
+                return;
+            }
+            showLoading('Guardando...');
+            firebaseDatabase.ref(path).update(data)
+                .then(() => {
+                    hideLoading();
+                    showAlert(successMessage, 'success');
+                })
+                .catch(error => {
+                    hideLoading();
+                    showAlert('Error: ' + error.message, 'danger');
+                });
+        }
+
+        // ============================================
+        // FUNCIONES DE INVENTARIO
+        // ============================================
+
+        function loadProducts() {
+            if (!firebaseDatabase) {
+                console.error('Firebase Database no disponible');
+                return;
+            }
+
+            productsRef = firebaseDatabase.ref('products');
+
+            unsubscribeProducts = productsRef.on('value', (snapshot) => {
+                const productsData = snapshot.val();
+                allProducts = [];
+
+                if (productsData) {
+                    Object.keys(productsData).forEach(key => {
+                        allProducts.push({
+                            id: key,
+                            ...productsData[key]
+                        });
+                    });
+                }
+
+                console.log(`Productos cargados: ${allProducts.length}`);
+            }, (error) => {
+                console.error('Error cargando productos:', error);
+                showAlert('Error al cargar inventario: ' + error.message, 'danger');
+            });
+        }
+
+        function findProductByCode(code) {
+            if (!code) return null;
+            return allProducts.find(p => 
+                p.code === code || 
+                p.id === code || 
+                p.sku === code ||
+                (p.code && p.code.toLowerCase() === code.toLowerCase()) ||
+                (p.sku && p.sku.toLowerCase() === code.toLowerCase())
+            );
+        }
+
+        function checkOrderInventory(order) {
+            if (!order.items || order.items.length === 0) {
+                return { available: true, errors: [] };
+            }
+
+            const errors = [];
+
+            order.items.forEach(item => {
+                const product = findProductByCode(item.code || item.id || item.productId);
+                if (!product) {
+                    errors.push(`Producto no encontrado: ${item.name || 'Desconocido'}`);
+                    return;
+                }
+
+                const stock = parseInt(product.stock) || 0;
+                const quantity = parseInt(item.quantity) || 1;
+
+                if (stock < quantity) {
+                    errors.push(`Stock insuficiente para "${product.name}": disponible ${stock}, solicitado ${quantity}`);
+                }
+            });
+
+            return {
+                available: errors.length === 0,
+                errors
+            };
+        }
+
+        async function deductInventoryFromOrder(orderId) {
+            const order = allOrders.find(o => o.id === orderId || o.orderNumber === orderId);
+            if (!order) throw new Error('Pedido no encontrado');
+            if (!order.items || order.items.length === 0) throw new Error('El pedido no tiene productos');
+
+            const updates = [];
+
+            for (const item of order.items) {
+                const product = findProductByCode(item.code || item.id || item.productId);
+                if (!product) {
+                    throw new Error(`Producto no encontrado: ${item.name || item.code}`);
+                }
+
+                const currentStock = parseInt(product.stock) || 0;
+                const quantity = parseInt(item.quantity) || 1;
+
+                if (currentStock < quantity) {
+                    throw new Error(`Stock insuficiente para "${product.name}". Disponible: ${currentStock}, Solicitado: ${quantity}`);
+                }
+
+                const newStock = currentStock - quantity;
+
+                updates.push(
+                    productsRef.child(product.id).update({
+                        stock: newStock,
+                        lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                    })
+                );
+
+                product.stock = newStock;
+            }
+
+            await Promise.all(updates);
+
+            const movement = {
+                orderId: order.orderNumber,
+                orderDate: Date.now(),
+                items: order.items.map(i => ({
+                    code: i.code || i.id,
+                    name: i.name,
+                    quantity: i.quantity
+                })),
+                type: 'order_confirmed',
+                user: currentUser?.email || 'admin'
+            };
+            await firebaseDatabase.ref('stockMovements').push(movement).catch(console.error);
+
+            return { success: true, message: 'Inventario actualizado' };
+        }
+
+        async function restoreInventoryFromOrder(orderId) {
+            const order = allOrders.find(o => o.id === orderId || o.orderNumber === orderId);
+            if (!order) throw new Error('Pedido no encontrado');
+
+            const updates = [];
+
+            for (const item of order.items || []) {
+                const product = findProductByCode(item.code || item.id || item.productId);
+                if (product) {
+                    const currentStock = parseInt(product.stock) || 0;
+                    const quantity = parseInt(item.quantity) || 1;
+                    const newStock = currentStock + quantity;
+
+                    updates.push(
+                        productsRef.child(product.id).update({
+                            stock: newStock,
+                            lastUpdated: firebase.database.ServerValue.TIMESTAMP
+                        })
+                    );
+                    product.stock = newStock;
+                }
+            }
+
+            await Promise.all(updates);
+
+            const movement = {
+                orderId: order.orderNumber,
+                orderDate: Date.now(),
+                items: order.items?.map(i => ({
+                    code: i.code || i.id,
+                    name: i.name,
+                    quantity: i.quantity
+                })),
+                type: 'order_cancelled',
+                user: currentUser?.email || 'admin'
+            };
+            await firebaseDatabase.ref('stockMovements').push(movement).catch(console.error);
+
+            return { success: true };
+        }
+
+        async function confirmOrderWithInventory(orderId) {
+            const order = allOrders.find(o => o.id === orderId || o.orderNumber === orderId);
+            if (!order) {
+                showAlert('Pedido no encontrado', 'danger');
+                return;
+            }
+
+            const check = checkOrderInventory(order);
+            if (!check.available) {
+                const errorHtml = `
+                    <div class="alert alert-danger">
+                        <h6>No se puede confirmar el pedido:</h6>
+                        <ul class="mb-0">
+                            ${check.errors.map(err => `<li>${err}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                const errorContent = document.getElementById('inventoryErrorContent');
+                if (errorContent) errorContent.innerHTML = errorHtml;
+                const modal = new bootstrap.Modal(document.getElementById('inventoryErrorModal'));
+                modal.show();
+                return;
+            }
+
+            if (!confirm(`¿Confirmar pedido ${order.orderNumber} y descontar del inventario?`)) {
+                return;
+            }
+
+            showLoading('Actualizando inventario...');
+            try {
+                await deductInventoryFromOrder(orderId);
+                updateOrderStatus(orderId, 'confirmado');
+                hideLoading();
+                showAlert(`Pedido ${order.orderNumber} confirmado. Stock actualizado.`, 'success');
+            } catch (error) {
+                hideLoading();
+                showAlert(`Error: ${error.message}`, 'danger');
+                console.error(error);
+            }
+        }
+
+        async function cancelOrderWithInventory(orderId) {
+            const order = allOrders.find(o => o.id === orderId || o.orderNumber === orderId);
+            if (!order) {
+                showAlert('Pedido no encontrado', 'danger');
+                return;
+            }
+
+            if (!['confirmado', 'enviado'].includes(order.status)) {
+                updateOrderStatus(orderId, 'cancelado');
+                showAlert('Pedido cancelado (sin restaurar inventario)', 'success');
+                return;
+            }
+
+            if (!confirm(`¿Cancelar pedido ${order.orderNumber} y restaurar el inventario?`)) {
+                return;
+            }
+
+            showLoading('Restaurando inventario...');
+            try {
+                await restoreInventoryFromOrder(orderId);
+                updateOrderStatus(orderId, 'cancelado');
+                hideLoading();
+                showAlert(`Pedido cancelado. Inventario restaurado.`, 'success');
+            } catch (error) {
+                hideLoading();
+                showAlert(`Error al restaurar: ${error.message}`, 'danger');
+            }
+        }
+
+        async function processMultipleOrdersWithInventory(orderIds) {
+            showLoading(`Procesando ${orderIds.length} pedidos...`);
+            
+            let successCount = 0;
+            let errorList = [];
+
+            for (const orderId of orderIds) {
+                try {
+                    await deductInventoryFromOrder(orderId);
+                    updateOrderStatus(orderId, 'confirmado');
+                    successCount++;
+                } catch (error) {
+                    errorList.push(`Pedido ${orderId}: ${error.message}`);
+                }
+            }
+
+            hideLoading();
+
+            if (errorList.length > 0) {
+                showAlert(`${successCount} confirmados. Errores: ${errorList.join('\n')}`, 'warning');
+            } else {
+                showAlert(`${successCount} pedidos confirmados exitosamente.`, 'success');
+            }
+
+            clearOrderSelection();
+            loadOrders();
+            loadDashboardData();
+        }
+
+        // ============================================
+        // FUNCIONES AUXILIARES
+        // ============================================
+        
+        function getStatusBadgeClass(status) {
+            switch(status) {
+                case 'pendiente': return 'badge-pending';
+                case 'confirmado': return 'badge-confirmed';
+                case 'enviado': return 'badge-shipped';
+                case 'completado': return 'badge-delivered';
+                case 'cancelado': return 'badge-cancelled';
+                default: return 'badge-secondary';
+            }
+        }
+
+        function getPaymentStatusClass(status) {
+            switch(status) {
+                case 'pendiente': return 'badge-pending';
+                case 'confirmado': return 'badge-delivered';
+                case 'rechazado': return 'badge-cancelled';
+                default: return 'badge-secondary';
+            }
+        }
+
+        function getRefundStatusClass(status) {
+            switch(status) {
+                case 'pendiente': return 'badge-pending';
+                case 'procesando': return 'badge-confirmed';
+                case 'completado': return 'badge-delivered';
+                case 'rechazado': return 'badge-cancelled';
+                default: return 'badge-secondary';
+            }
+        }
+
+        function updatePendingCounts() {
+            const pendingOrders = allOrders.filter(order => order.status === 'pendiente');
+            const pendingBadge = document.getElementById('pendingOrdersBadge');
+            if (pendingBadge) pendingBadge.textContent = pendingOrders.length;
+            
+            const pendingRefunds = allRefunds.filter(refund => refund.status === 'pendiente');
+            const refundBadge = document.getElementById('pendingRefundsBadge');
+            if (refundBadge) refundBadge.textContent = pendingRefunds.length;
+        }
+
+        function showLoading(message = 'Cargando...') {
+            const overlay = document.getElementById('loadingOverlay');
+            const text = document.getElementById('loadingText');
+            
+            if (text) text.textContent = message;
+            if (overlay) overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) overlay.style.display = 'none';
+        }
+
+        function showAlert(message, type = 'info') {
+            const alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            const container = document.getElementById('alertContainer');
+            if (container) {
+                container.innerHTML = alertHtml;
+            }
+            
+            setTimeout(() => {
+                if (container) {
+                    const alert = container.querySelector('.alert');
+                    if (alert) {
+                        alert.remove();
+                    }
+                }
+            }, 5000);
+        }
+
+        function refreshData() {
+            showDashboard();
+            showAlert('Datos actualizados', 'success');
+        }
+    </script>
+</body>
+</html>						
