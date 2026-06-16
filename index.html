@@ -1420,7 +1420,7 @@ CLABE: 012180012345678900</textarea>
             if (firebaseAuth) {
                 firebaseAuth.onAuthStateChanged(function(user) {
                     currentUser = user;
-                    if (user && (user.email === 'admin@luxuryshop.com' || user.email === 'admin@admin.com')) {
+                    if (user && (user.email === 'admin@luxuryshop.com' || user.email === 'vinicio@geomira.se')) {
                         updateUserInfo(user);
                         loadProducts();
                         loadDashboardData();
