@@ -696,9 +696,9 @@
                         <i class="fas fa-user-circle"></i>
                         <span id="userEmail">usuario@ejemplo.com</span>
                     </div>
-					<a href="index.html" class="btn-outline-success">
-						<i class="fas fa-tachometer-alt"></i> Panel
-					</a>					
+                    <a href="index.html" class="btn btn-outline-primary">
+                        <i class="fas fa-tachometer-alt"></i> Panel
+                    </a>
                     <button class="logout-btn" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Salir</span>
@@ -1000,25 +1000,28 @@
         // ============================================
         // CONFIGURACIÓN DE FIREBASE (TUS DATOS)
         // ============================================
-		const firebaseConfig = {
-		  apiKey: "AIzaSyDRLnS3dcieybMTVqgVJtUuf4E5xBC9HXQ",
-		  authDomain: "k-a-boutique.firebaseapp.com",
-		  databaseURL: "https://k-a-boutique-default-rtdb.firebaseio.com",
-		  projectId: "k-a-boutique",
-		  storageBucket: "k-a-boutique.firebasestorage.app",
-		  messagingSenderId: "163536158997",
-		  appId: "1:163536158997:web:d7f6d2c6481196e489691c",
-		  measurementId: "G-HKZ2KCQWMF"
-		};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRLnS3dcieybMTVqgVJtUuf4E5xBC9HXQ",
+            authDomain: "k-a-boutique.firebaseapp.com",
+            databaseURL: "https://k-a-boutique-default-rtdb.firebaseio.com",
+            projectId: "k-a-boutique",
+            storageBucket: "k-a-boutique.firebasestorage.app",
+            messagingSenderId: "163536158997",
+            appId: "1:163536158997:web:d7f6d2c6481196e489691c",
+            measurementId: "G-HKZ2KCQWMF"
+        };
 
-
-        // Inicializar Firebase
+        // Inicializar Firebase (evitar reinicializar)
         let app, auth, database;
         try {
-            app = firebase.apps.length ? firebase.app() : firebase.initializeApp(firebaseConfig);
+            if (firebase.apps.length) {
+                app = firebase.app();
+            } else {
+                app = firebase.initializeApp(firebaseConfig);
+            }
             auth = firebase.auth();
             database = firebase.database();
-            console.log("✅ Firebase inicializado");
+            console.log("✅ Firebase inicializado correctamente");
         } catch (error) {
             console.error("❌ Firebase error:", error);
             showStatusAlert("Error de conexión con Firebase", "danger");
@@ -1027,9 +1030,9 @@
         // ============================================
         // CONFIGURACIÓN DE CLOUDINARY (TUS DATOS)
         // ============================================
-        const CLOUDINARY_CLOUD_NAME = "dhum9w5ps";      // Tu cloud name
-        const CLOUDINARY_UPLOAD_PRESET = "Depositos";   // ✅ IMPORTANTE: DEBE SER "Depositos" con D mayúscula
-        const CLOUDINARY_FOLDER = "samples/Productos";  // Carpeta donde se guardarán las imágenes
+        const CLOUDINARY_CLOUD_NAME = "dhum9w5ps";
+        const CLOUDINARY_UPLOAD_PRESET = "Depositos";
+        const CLOUDINARY_FOLDER = "samples/Productos";
 
         console.log("☁️ Cloudinary configurado:", CLOUDINARY_CLOUD_NAME, CLOUDINARY_UPLOAD_PRESET);
 
@@ -1694,6 +1697,16 @@
                 currentUser = user;
                 console.log("Usuario autenticado:", user.email);
 
+                // Verificar si es administrador
+                const adminEmails = ['quezadaa382@gmail.com', 'vinicio@geomira.se'];
+                if (!adminEmails.includes(user.email)) {
+                    showStatusAlert("No tienes permisos de administrador.", "danger");
+                    auth.signOut().then(() => {
+                        showLoginPage();
+                    });
+                    return;
+                }
+
                 try {
                     productsRef = database.ref('products');
                     usersRef = database.ref('users');
@@ -1787,7 +1800,7 @@
         }
 
         // ============================================
-        // FUNCIONES DE INTERFAZ - CORREGIDAS
+        // FUNCIONES DE INTERFAZ
         // ============================================
         function showLoginPage() {
             document.getElementById('loginPage').style.display = 'flex';
@@ -1834,34 +1847,22 @@
         }
 
         // ============================================
-        // FUNCIÓN SHOW TAB CORREGIDA (SIN ERROR)
+        // FUNCIÓN SHOW TAB CORREGIDA
         // ============================================
         function showTab(tabId) {
-            // Ocultar todos los tabs
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // Desactivar todos los botones
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            
-            // Mostrar el tab seleccionado
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+
             const selectedTab = document.getElementById(tabId);
-            if (selectedTab) {
-                selectedTab.classList.add('active');
-            }
-            
-            // Activar el botón correspondiente
+            if (selectedTab) selectedTab.classList.add('active');
+
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 const onclickAttr = btn.getAttribute('onclick');
                 if (onclickAttr && onclickAttr.includes(tabId)) {
                     btn.classList.add('active');
                 }
             });
-            
-            // Actualizar estadísticas si es necesario
+
             if (tabId === 'stats') {
                 updateStats();
             }
