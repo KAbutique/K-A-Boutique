@@ -543,7 +543,7 @@
         
         <div class="sidebar-footer">
             <div class="user-info">
-                <div class="user-avatar" id="userAvatar">A</div>
+                <div class="user-avatar" id="userAvatar">K</div>
                 <div>
                     <h6 class="mb-0" id="userName">Administrador</h6>
                     <small id="userEmail">quezadaa382@gmail.com</small>
@@ -1089,7 +1089,7 @@
                         
                         <div class="mb-3">
                             <label class="form-label">Teléfono</label>
-                            <input type="text" class="form-control" id="storePhone" value="+1 234 567 890">
+                            <input type="text" class="form-control" id="storePhone" value="+593 99 429 8427">
                         </div>
                         
                         <div class="mb-3">
@@ -1174,7 +1174,7 @@ CLABE: 012180012345678900</textarea>
                         
                         <div class="mb-3">
                             <label class="form-label">Email del Administrador</label>
-                            <input type="email" class="form-control" id="adminNotificationEmail" value="admin@luxuryshop.com">
+                            <input type="email" class="form-control" id="adminNotificationEmail" value="quezadaa382@gmail.com">
                         </div>
                         
                         <div class="mb-3">
@@ -1376,27 +1376,27 @@ CLABE: 012180012345678900</textarea>
     
     <script>
         // ============================================
-        // CONFIGURACIÓN DE FIREBASE (compartida con la tienda)
+        // CONFIGURACIÓN DE FIREBASE (ACTUALIZADA)
         // ============================================
-		const firebaseConfig = {
-		  apiKey: "AIzaSyDRLnS3dcieybMTVqgVJtUuf4E5xBC9HXQ",
-		  authDomain: "k-a-boutique.firebaseapp.com",
-		  databaseURL: "https://k-a-boutique-default-rtdb.firebaseio.com",
-		  projectId: "k-a-boutique",
-		  storageBucket: "k-a-boutique.firebasestorage.app",
-		  messagingSenderId: "163536158997",
-		  appId: "1:163536158997:web:d7f6d2c6481196e489691c",
-		  measurementId: "G-HKZ2KCQWMF"
-		};
+        const firebaseConfig = {
+            apiKey: "AIzaSyDRLnS3dcieybMTVqgVJtUuf4E5xBC9HXQ",
+            authDomain: "k-a-boutique.firebaseapp.com",
+            databaseURL: "https://k-a-boutique-default-rtdb.firebaseio.com",
+            projectId: "k-a-boutique",
+            storageBucket: "k-a-boutique.firebasestorage.app",
+            messagingSenderId: "163536158997",
+            appId: "1:163536158997:web:d7f6d2c6481196e489691c",
+            measurementId: "G-HKZ2KCQWMF"
+        };
 
         let firebaseApp, firebaseAuth, firebaseDatabase;
         try {
             firebaseApp = firebase.initializeApp(firebaseConfig);
             firebaseAuth = firebase.auth();
             firebaseDatabase = firebase.database();
-            console.log("✅ Firebase inicializado correctamente");
+            console.log("Firebase inicializado correctamente");
         } catch (error) {
-            console.error("❌ Error inicializando Firebase:", error);
+            console.error("Error inicializando Firebase:", error);
         }
 
         let currentUser = null;
@@ -1420,7 +1420,9 @@ CLABE: 012180012345678900</textarea>
             if (firebaseAuth) {
                 firebaseAuth.onAuthStateChanged(function(user) {
                     currentUser = user;
-                    if (user && (user.email === 'admin@luxuryshop.com' || user.email === 'vinicio@geomira.se')) {
+                    // Lista de administradores autorizados
+                    const adminEmails = ['quezadaa382@gmail.com', 'vinicio@geomira.se'];
+                    if (user && adminEmails.includes(user.email)) {
                         updateUserInfo(user);
                         loadProducts();
                         loadDashboardData();
@@ -2017,7 +2019,6 @@ CLABE: 012180012345678900</textarea>
             if (orders.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="9" class="text-center">No se encontraron pedidos
                         <td colspan="9" class="text-center">No se encontraron pedidos</td>
                     </tr>
                 `;
@@ -3527,7 +3528,7 @@ CLABE: 012180012345678900</textarea>
                 const addressInput = document.getElementById('storeAddress');
                 const currencySelect = document.getElementById('storeCurrency');
                 
-                if (nameInput) nameInput.value = settings.general?.storeName || 'K'A Boutique';
+                if (nameInput) nameInput.value = settings.general?.storeName || 'K\'A Boutique';
                 if (emailInput) emailInput.value = settings.general?.storeEmail || 'quezadaa382@gmail.com';
                 if (phoneInput) phoneInput.value = settings.general?.storePhone || '+593 99 429 8427';
                 if (addressInput) addressInput.value = settings.general?.storeAddress || 'Av. Principal 123, Ciudad';
@@ -3541,7 +3542,7 @@ CLABE: 012180012345678900</textarea>
                 if (payMethodTransfer) payMethodTransfer.checked = settings.payment?.methods?.transferencia !== false;
                 if (payMethodCard) payMethodCard.checked = settings.payment?.methods?.tarjeta === true;
                 if (payMethodCash) payMethodCash.checked = settings.payment?.methods?.efectivo === true;
-                if (bankInfo) bankInfo.value = settings.payment?.bankInfo || 'Banco: Banco Nacional\nCuenta: 123-456789-0\nTitular: K'A Boutique S.A.\nCLABE: 012180012345678900';
+                if (bankInfo) bankInfo.value = settings.payment?.bankInfo || 'Banco: Banco Nacional\nCuenta: 123-456789-0\nTitular: K\'A Boutique S.A.\nCLABE: 012180012345678900';
                 
                 const shippingCost = document.getElementById('shippingCost');
                 const shippingTime = document.getElementById('shippingTime');
@@ -3555,7 +3556,7 @@ CLABE: 012180012345678900</textarea>
                 const notifyNewOrder = document.getElementById('notifyNewOrder');
                 const notifyPayment = document.getElementById('notifyPayment');
                 
-                if (adminEmail) adminEmail.value = settings.notifications?.adminEmail || 'admin@luxuryshop.com';
+                if (adminEmail) adminEmail.value = settings.notifications?.adminEmail || 'quezadaa382@gmail.com';
                 if (notifyNewOrder) notifyNewOrder.checked = settings.notifications?.notifyNewOrder !== false;
                 if (notifyPayment) notifyPayment.checked = settings.notifications?.notifyPayment !== false;
                 
@@ -3622,7 +3623,7 @@ CLABE: 012180012345678900</textarea>
             const notifyPayment = document.getElementById('notifyPayment');
             
             const settings = {
-                adminEmail: adminEmail ? adminEmail.value : 'admin@luxuryshop.com',
+                adminEmail: adminEmail ? adminEmail.value : 'quezadaa382@gmail.com',
                 notifyNewOrder: notifyNewOrder ? notifyNewOrder.checked : true,
                 notifyPayment: notifyPayment ? notifyPayment.checked : true
             };
@@ -4017,4 +4018,4 @@ CLABE: 012180012345678900</textarea>
         }
     </script>
 </body>
-</html>						
+</html>
