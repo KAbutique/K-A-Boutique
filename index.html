@@ -515,34 +515,83 @@
         </div>
     </div>
 
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar" style="display: none;">
-        <div class="sidebar-header">
-            <div class="logo">
-                <i class="fas fa-gem"></i>
-                <span class="logo-text">Admin Panel</span>
-            </div>
-        </div>
-        <ul class="sidebar-menu">
-            <li><a href="#" class="nav-link active" onclick="showDashboard()"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-            <li><a href="#" class="nav-link" onclick="showOrders()"><i class="fas fa-shopping-cart"></i><span>Pedidos</span><span class="badge bg-danger ms-auto" id="pendingOrdersBadge">0</span></a></li>
-            <li><a href="#" class="nav-link" onclick="showPayments()"><i class="fas fa-credit-card"></i><span>Pagos</span></a></li>
-            <li><a href="#" class="nav-link" onclick="showCustomers()"><i class="fas fa-users"></i><span>Clientes</span></a></li>
-            <li><a href="items.html" class="nav-link"><i class="fas fa-box"></i><span>Productos</span></a></li>
-            <li><a href="#" class="nav-link" onclick="showRefunds()"><i class="fas fa-exchange-alt"></i><span>Devoluciones</span><span class="badge bg-warning ms-auto" id="pendingRefundsBadge">0</span></a></li>
-            <li><a href="#" class="nav-link" onclick="showReports()"><i class="fas fa-chart-bar"></i><span>Reportes</span></a></li>
-            <li><a href="#" class="nav-link" onclick="showSettings()"><i class="fas fa-cog"></i><span>Configuración</span></a></li>
-        </ul>
-        <div class="sidebar-footer">
-            <div class="user-info">
-                <div class="user-avatar" id="userAvatar">K</div>
-                <div>
-                    <h6 class="mb-0" id="userName">Administrador</h6>
-                    <small id="userEmail">quezadaa382@gmail.com</small>
-                </div>
-            </div>
-        </div>
-    </div>
+	<!-- Sidebar -->
+	<div class="sidebar" id="sidebar" style="display: none;">
+		<div class="sidebar-header">
+			<div class="logo">
+				<i class="fas fa-gem"></i>
+				<span class="logo-text">Admin Panel</span>
+			</div>
+		</div>
+		<ul class="sidebar-menu">
+			<li>
+				<a href="#" class="nav-link active" onclick="showDashboard()">
+					<i class="fas fa-tachometer-alt"></i>
+					<span>Dashboard</span>
+				</a>
+			</li>
+			<li>
+				<a href="#" class="nav-link" onclick="showOrders()">
+					<i class="fas fa-shopping-cart"></i>
+					<span>Pedidos</span>
+					<span class="badge bg-danger ms-auto" id="pendingOrdersBadge">0</span>
+				</a>
+			</li>
+			<li>
+				<a href="#" class="nav-link" onclick="showPayments()">
+					<i class="fas fa-credit-card"></i>
+					<span>Pagos</span>
+				</a>
+			</li>
+			<li>
+				<a href="#" class="nav-link" onclick="showCustomers()">
+					<i class="fas fa-users"></i>
+					<span>Clientes</span>
+				</a>
+			</li>
+			<li>
+				<a href="items.html" class="nav-link">
+					<i class="fas fa-box"></i>
+					<span>Productos</span>
+				</a>
+			</li>
+			<li>
+				<a href="#" class="nav-link" onclick="showRefunds()">
+					<i class="fas fa-exchange-alt"></i>
+					<span>Devoluciones</span>
+					<span class="badge bg-warning ms-auto" id="pendingRefundsBadge">0</span>
+				</a>
+			</li>
+			<li>
+				<a href="#" class="nav-link" onclick="showReports()">
+					<i class="fas fa-chart-bar"></i>
+					<span>Reportes</span>
+				</a>
+			</li>
+			<!-- 👇 NUEVO ÍTEM DE CONTABILIDAD -->
+			<li>
+				<a href="#" class="nav-link" onclick="openContabilidadModal()">
+					<i class="fas fa-calculator"></i>
+					<span>Contabilidad</span>
+				</a>
+			</li>
+			<li>
+				<a href="#" class="nav-link" onclick="showSettings()">
+					<i class="fas fa-cog"></i>
+					<span>Configuración</span>
+				</a>
+			</li>
+		</ul>
+		<div class="sidebar-footer">
+			<div class="user-info">
+				<div class="user-avatar" id="userAvatar">K</div>
+				<div>
+					<h6 class="mb-0" id="userName">Administrador</h6>
+					<small id="userEmail">quezadaa382@gmail.com</small>
+				</div>
+			</div>
+		</div>
+	</div>
 
     <!-- Main Content -->
     <div class="main-content" id="mainContent" style="display: none;">
@@ -801,87 +850,193 @@
         </div>
     </div>
 
-    <!-- Modales -->
-    <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Detalles del Pedido <span id="modalOrderNumber"></span></h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body"><div id="orderDetailsContent"></div></div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button><button type="button" class="btn btn-primary" onclick="printOrderDetails()"><i class="fas fa-print me-2"></i> Imprimir</button></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="paymentDetailsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Detalles del Pago</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body"><div id="paymentDetailsContent"></div></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title">Detalles del Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body"><div id="customerDetailsContent"></div></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="customerModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header"><h5 class="modal-title" id="customerModalTitle">Nuevo Cliente</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body">
-                    <form id="customerForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label">Nombre Completo</label><input type="text" class="form-control" id="custName" required></div>
-                                <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" id="custEmail" required></div>
-                                <div class="mb-3"><label class="form-label">Teléfono</label><input type="tel" class="form-control" id="custPhone"></div>
-                                <div class="mb-3"><label class="form-label">Empresa</label><input type="text" class="form-control" id="custCompany"></div>
-                                <div class="mb-3"><label class="form-label">Género</label><select class="form-select" id="custGender"><option value="">Seleccionar</option><option value="masculino">Masculino</option><option value="femenino">Femenino</option><option value="otro">Otro</option></select></div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label">Fecha de Nacimiento</label><input type="date" class="form-control" id="custBirthdate"></div>
-                                <div class="mb-3"><label class="form-label">Dirección de Envío</label><textarea class="form-control" id="custShippingAddress" rows="3"></textarea></div>
-                                <div class="mb-3"><label class="form-label">Dirección de Facturación</label><textarea class="form-control" id="custBillingAddress" rows="3"></textarea></div>
-                                <div class="mb-3"><label class="form-label">País</label><input type="text" class="form-control" id="custCountry" value="Ecuador"></div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label">Estado/Provincia</label><input type="text" class="form-control" id="custState"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3"><label class="form-label">Ciudad</label><input type="text" class="form-control" id="custCity"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3"><label class="form-label">Notas</label><textarea class="form-control" id="custNotes" rows="3"></textarea></div>
-                        <div class="mb-3">
-                            <div class="form-check"><input class="form-check-input" type="checkbox" id="custNewsletter"><label class="form-check-label" for="custNewsletter">Suscrito a newsletter</label></div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" onclick="saveCustomer()">Guardar Cliente</button></div>
-            </div>
-        </div>
-    </div>
-    <div class="modal fade" id="inventoryErrorModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i> Error de Inventario</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body"><div id="inventoryErrorContent"></div></div>
-                <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div>
-            </div>
-        </div>
-    </div>
+<!-- ============================================ -->
+<!-- MODAL DE CLIENTES (Nuevo / Editar) -->
+<!-- ============================================ -->
+	<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="customerModalTitle">Nuevo Cliente</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<form id="customerForm">
+						<!-- ========================================== -->
+						<!-- SECCIÓN: INFORMACIÓN PERSONAL -->
+						<!-- ========================================== -->
+						<h6 class="border-bottom pb-2 mb-3"><i class="fas fa-user me-2"></i>Información Personal</h6>
+						<div class="row">
+							<div class="col-md-3 mb-3">
+								<label for="custFirstName" class="form-label">Nombres</label>
+								<input type="text" class="form-control" id="custFirstName" placeholder="Ej: Juan">
+							</div>
+							<div class="col-md-3 mb-3">
+								<label for="custLastName" class="form-label">Apellidos</label>
+								<input type="text" class="form-control" id="custLastName" placeholder="Ej: Pérez">
+							</div>
+						</div>
 
-    <!-- ========================================================== -->
-    <!--  SCRIPTS EXTERNOS (Módulos) - DEBEN ESTAR EN LA MISMA CARPETA -->
-    <!-- ========================================================== -->
-    <!-- ========================================================== -->
-    <!--  SCRIPT PRINCIPAL (Firebase y lógica central)              -->
-    <!-- ========================================================== -->
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="custEmail" class="form-label">Email *</label>
+								<input type="email" class="form-control" id="custEmail" placeholder="cliente@email.com">
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="custPhone" class="form-label">Teléfono</label>
+								<input type="text" class="form-control" id="custPhone" placeholder="0999999999">
+							</div>
+						</div>
+
+						<!-- ========================================== -->
+						<!-- SECCIÓN: IDENTIFICACIÓN -->
+						<!-- ========================================== -->
+						<h6 class="border-bottom pb-2 mb-3 mt-3"><i class="fas fa-id-card me-2"></i>Identificación</h6>
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="custIdentificationType" class="form-label">Tipo de Identificación</label>
+								<select class="form-select" id="custIdentificationType">
+									<option value="cedula">Cédula</option>
+									<option value="ruc">RUC</option>
+									<option value="pasaporte">Pasaporte</option>
+									<option value="otro">Otro</option>
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="custIdentification" class="form-label">Número de Identificación *</label>
+								<input type="text" class="form-control" id="custIdentification" placeholder="Número de identificación">
+							</div>
+						</div>
+
+						<!-- ========================================== -->
+						<!-- SECCIÓN: TIPO DE CLIENTE -->
+						<!-- ========================================== -->
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="custCustomerType" class="form-label">Tipo de Cliente</label>
+								<select class="form-select" id="custCustomerType">
+									<option value="particular">Particular</option>
+									<option value="empresa">Empresa</option>
+									<option value="extranjero">Extranjero</option>
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="custCompany" class="form-label">Empresa / Compañía</label>
+								<input type="text" class="form-control" id="custCompany" placeholder="Nombre de la empresa">
+							</div>
+						</div>
+
+						<!-- ========================================== -->
+						<!-- SECCIÓN: GÉNERO Y FECHA DE NACIMIENTO -->
+						<!-- ========================================== -->
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="custGender" class="form-label">Género</label>
+								<select class="form-select" id="custGender">
+									<option value="">Seleccionar...</option>
+									<option value="masculino">Masculino</option>
+									<option value="femenino">Femenino</option>
+									<option value="otro">Otro</option>
+									<option value="prefiero_no_decir">Prefiero no decir</option>
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="custBirthdate" class="form-label">Fecha de Nacimiento</label>
+								<input type="date" class="form-control" id="custBirthdate">
+							</div>
+						</div>
+
+						<!-- ========================================== -->
+						<!-- SECCIÓN: DIRECCIONES -->
+						<!-- ========================================== -->
+						<h6 class="border-bottom pb-2 mb-3 mt-3"><i class="fas fa-map-marker-alt me-2"></i>Direcciones</h6>
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="custCountry" class="form-label">País</label>
+								<select class="form-select" id="custCountry">
+									<!-- Se llena con JavaScript -->
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="custState" class="form-label">Provincia / Estado</label>
+								<select class="form-select" id="custState" onchange="updateCities()">
+									<option value="">Seleccionar...</option>
+								</select>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-6 mb-3">
+								<label for="custCity" class="form-label">Ciudad</label>
+								<select class="form-select" id="custCity">
+									<option value="">Seleccionar provincia primero</option>
+								</select>
+							</div>
+							<div class="col-md-6 mb-3">
+								<label for="custShippingAddress" class="form-label">Dirección de Envío</label>
+								<input type="text" class="form-control" id="custShippingAddress" placeholder="Calle, número, referencia">
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-12 mb-3">
+								<label for="custBillingAddress" class="form-label">Dirección de Facturación</label>
+								<input type="text" class="form-control" id="custBillingAddress" placeholder="Calle, número, referencia">
+							</div>
+						</div>
+
+						<!-- ========================================== -->
+						<!-- SECCIÓN: NOTAS Y NEWSLETTER -->
+						<!-- ========================================== -->
+						<h6 class="border-bottom pb-2 mb-3 mt-3"><i class="fas fa-sticky-note me-2"></i>Información Adicional</h6>
+						<div class="row">
+							<div class="col-md-12 mb-3">
+								<label for="custNotes" class="form-label">Notas</label>
+								<textarea class="form-control" id="custNotes" rows="3" placeholder="Notas adicionales sobre el cliente..."></textarea>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-md-12 mb-3">
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="custNewsletter">
+									<label class="form-check-label" for="custNewsletter">
+										Suscribir al Newsletter
+									</label>
+								</div>
+							</div>
+						</div>
+					</form>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+					<button type="button" class="btn btn-primary" onclick="saveCustomer()">
+						<i class="fas fa-save me-1"></i> Guardar Cliente
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- ============================================ -->
+	<!-- MODAL DE DETALLES DEL CLIENTE -->
+	<!-- ============================================ -->
+	<div class="modal fade" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+		<div class="modal-dialog modal-lg">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title"><i class="fas fa-user me-2"></i>Detalles del Cliente</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" id="customerDetailsContent">
+					<!-- Contenido cargado por JavaScript -->
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>
+	</div>
     <script>
         // ============================================
         // FIREBASE CONFIG
@@ -1965,5 +2120,6 @@
     <script src="devoluciones.js"></script>
     <script src="reportes.js"></script>
     <script src="configuracion.js"></script>
+	<script src="admin-contabilidad.js"></script>
 </body>
 </html>
